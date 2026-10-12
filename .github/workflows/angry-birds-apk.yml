@@ -1,0 +1,70 @@
+name: Angry Birds APK
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'angry-birds/**'
+      - '.github/workflows/angry-birds-apk.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Check Unity credentials
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        run: |
+          if [ -z "$UNITY_EMAIL" ] || [ -z "$UNITY_PASSWORD" ] || { [ -z "$UNITY_LICENSE" ] && [ -z "$UNITY_SERIAL" ]; }; then
+            echo "::error::Add repository secrets UNITY_EMAIL, UNITY_PASSWORD and UNITY_LICENSE (contents of your Unity_lic.ulf). See angry-birds/README.md."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v4
+
+      # The Unity Android image is ~7 GB; make room on the hosted runner.
+      - uses: jlumbroso/free-disk-space@v1.3.1
+        with:
+          tool-cache: false
+          large-packages: false
+
+      - uses: actions/cache@v4
+        with:
+          path: angry-birds/Library
+          key: Library-Android-${{ hashFiles('angry-birds/Assets/**', 'angry-birds/Packages/**', 'angry-birds/ProjectSettings/**') }}
+          restore-keys: Library-Android-
+
+      - uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: angry-birds
+          targetPlatform: Android
+          buildName: AngryBirds
+          buildMethod: BuildScript.BuildAndroid
+          androidVersionCode: ${{ github.run_number }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: AngryBirds-apk
+          path: build/Android/*.apk
+
+      - name: Publish APK as a GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: angry-birds-build-${{ github.run_number }}
+          name: Angry Birds (build ${{ github.run_number }})
+          target_commitish: ${{ github.sha }}
+          body: Download `AngryBirds.apk` below and open it on your Android phone (allow "install unknown apps").
+          files: build/Android/*.apk
+          make_latest: true
