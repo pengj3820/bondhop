@@ -68,7 +68,7 @@ public class Bird : MonoBehaviour
             float since = Time.time - launchTime;
             if (since > 9f) return true;
             Vector3 p = transform.position;
-            if (p.y < -5f || p.x > 30f || p.x < -20f) return true;
+            if (p.y < -5f || p.x > 16f || p.x < -20f) return true; // off-screen
             return since > 0.5f && slowTime > 1.2f;
         }
     }

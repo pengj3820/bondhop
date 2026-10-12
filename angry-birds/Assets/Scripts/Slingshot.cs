@@ -4,7 +4,7 @@ using UnityEngine;
 public class Slingshot : MonoBehaviour
 {
     public const float MaxDrag = 1.6f;
-    public const float MaxSpeed = 17f;
+    public const float MaxSpeed = 15f;
     const int Dots = 18;
 
     public Vector2 RestPoint => (Vector2)transform.position + new Vector2(0f, 2.35f);

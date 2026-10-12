@@ -252,8 +252,8 @@ public class Game : MonoBehaviour
             {
                 Block(S, 8f, 0.5f, 6f, 1f);
                 float y = 1f;
-                Frame(S, 6f, y, 1.6f, 1.6f, W);
-                Frame(S, 10f, y, 1.6f, 1.6f, W);
+                Frame(W, 6f, y, 1.6f, 1.6f, S);
+                Frame(W, 10f, y, 1.6f, 1.6f, S);
                 float mid = Frame(W, 8f, y, 1.8f, 2.2f, S);
                 Frame(G, 8f, mid, 1.4f, 1.2f, W);
                 Block(G, 4.2f, 0.9f, 0.5f, 1.8f);
@@ -436,7 +436,8 @@ public class Game : MonoBehaviour
     bool WorldAtRest()
     {
         foreach (var rb in levelRoot.GetComponentsInChildren<Rigidbody2D>())
-            if (rb.bodyType == RigidbodyType2D.Dynamic && rb.velocity.sqrMagnitude > 0.04f)
+            // The spent bird may still be rolling far away; it's already judged by Bird.Done.
+            if ((current == null || rb != current.Body) && rb.bodyType == RigidbodyType2D.Dynamic && rb.velocity.sqrMagnitude > 0.04f)
                 return false;
         return true;
     }
