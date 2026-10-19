@@ -1,0 +1,654 @@
+<title>Spine vs Live2D</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@600;900&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: 一屏两台“实验台”并排（窄屏堆叠），下方是对照表与选型建议 */
+:root {
+  --bg: #eef1f5;
+  --panel: #ffffff;
+  --stage: #f7f8fb;
+  --ink: #1b2330;
+  --muted: #5b6676;
+  --line: #d7dce4;
+  --spine: #13807a;
+  --spine-soft: #d6efec;
+  --l2d: #b8366f;
+  --l2d-soft: #f6dde8;
+  --grid: rgba(184, 54, 111, .35);
+  --f-display: "Noto Serif SC", "Songti SC", "SimSun", serif;
+  --f-body: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12161d; --panel: #1a2029; --stage: #141a22; --ink: #e6eaf0; --muted: #98a3b3; --line: #2c3542;
+    --spine: #3cc0b6; --spine-soft: #173a38; --l2d: #ee6fa4; --l2d-soft: #3d1f2d; --grid: rgba(238, 111, 164, .4);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12161d; --panel: #1a2029; --stage: #141a22; --ink: #e6eaf0; --muted: #98a3b3; --line: #2c3542;
+  --spine: #3cc0b6; --spine-soft: #173a38; --l2d: #ee6fa4; --l2d-soft: #3d1f2d; --grid: rgba(238, 111, 164, .4);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.7;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 32px 64px;
+}
+.wrap { max-width: 1160px; margin: 0 auto; display: grid; gap: 40px; }
+header { display: grid; gap: 10px; max-width: 760px; }
+.eyebrow { font-family: var(--f-mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+h1 { font-family: var(--f-display); font-weight: 900; font-size: clamp(32px, 6vw, 56px); line-height: 1.1; margin: 0; text-wrap: balance; }
+h1 .s { color: var(--spine); }
+h1 .l { color: var(--l2d); }
+h1 .vs { font-family: var(--f-mono); font-weight: 400; font-size: .4em; color: var(--muted); vertical-align: middle; margin: 0 .4em; }
+h2 { font-family: var(--f-display); font-weight: 600; font-size: 24px; margin: 0; text-wrap: balance; }
+h3 { font-size: 17px; margin: 0; }
+p { margin: 0; }
+.lede { color: var(--muted); font-size: 16px; }
+
+.labs { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media (max-width: 860px) { .labs { grid-template-columns: 1fr; } }
+.lab { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; display: grid; min-width: 0; }
+.lab-head { padding: 16px 18px 12px; display: grid; gap: 4px; border-top: 4px solid var(--c); }
+.lab-head .tag { font-family: var(--f-mono); font-size: 12px; color: var(--c); letter-spacing: .06em; }
+.lab-head p { color: var(--muted); font-size: 14px; }
+.lab.spine { --c: var(--spine); --soft: var(--spine-soft); }
+.lab.l2d { --c: var(--l2d); --soft: var(--l2d-soft); }
+.stage { position: relative; background: var(--stage); border-block: 1px solid var(--line); }
+.stage canvas { display: block; width: 100%; height: 380px; touch-action: none; }
+.readout { font-family: var(--f-mono); font-size: 11px; line-height: 1.55; color: var(--muted); border-top: 1px dashed var(--line); padding: 8px 18px; white-space: pre; overflow-x: auto; font-variant-numeric: tabular-nums; min-height: calc(4 * 1.55em + 16px); }
+.controls { padding: 14px 18px 18px; display: grid; gap: 12px; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.seg button, .chip {
+  font: 500 13px var(--f-body); color: var(--ink); background: transparent; border: 1px solid var(--line);
+  border-radius: 999px; padding: 5px 14px; cursor: pointer;
+}
+.seg button[aria-pressed="true"] { background: var(--c); border-color: var(--c); color: var(--panel); }
+.seg button:hover, .chip:hover { border-color: var(--c); }
+button:focus-visible, input:focus-visible, label:focus-within { outline: 2px solid var(--c); outline-offset: 2px; }
+.toggle { display: inline-flex; gap: 6px; align-items: center; font-size: 13px; color: var(--muted); cursor: pointer; border-radius: 6px; }
+.toggle input { accent-color: var(--c); margin: 0; }
+.sliders { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 18px; }
+@media (max-width: 460px) { .sliders { grid-template-columns: 1fr; } }
+.sl { display: grid; grid-template-columns: 1fr auto; gap: 0 8px; align-items: center; font-family: var(--f-mono); font-size: 11.5px; color: var(--muted); }
+.sl span:last-of-type { font-variant-numeric: tabular-nums; color: var(--ink); }
+.sl input { grid-column: 1 / -1; width: 100%; accent-color: var(--c); margin: 2px 0 0; }
+.note { font-size: 13px; color: var(--muted); background: var(--soft); border-radius: 8px; padding: 9px 12px; }
+.note b { color: var(--ink); font-weight: 500; }
+
+.section { display: grid; gap: 16px; }
+.table-wrap { overflow-x: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; }
+table { border-collapse: collapse; width: 100%; min-width: 720px; font-size: 14px; }
+th, td { text-align: left; vertical-align: top; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+tr:last-child td { border-bottom: 0; }
+thead th { font-family: var(--f-mono); font-size: 12px; letter-spacing: .06em; font-weight: 600; background: var(--stage); }
+thead th.s { color: var(--spine); }
+thead th.l { color: var(--l2d); }
+tbody th { font-weight: 500; color: var(--muted); width: 14%; white-space: nowrap; }
+td { width: 43%; }
+code { font-family: var(--f-mono); font-size: .88em; background: var(--stage); border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; }
+
+.pick { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 860px) { .pick { grid-template-columns: 1fr; } }
+.pick > div { min-width: 0; display: grid; gap: 8px; align-content: start; padding-top: 12px; border-top: 2px solid var(--c, var(--line)); }
+.pick ul { margin: 0; padding-left: 1.1em; color: var(--muted); font-size: 14px; }
+.pick li + li { margin-top: 4px; }
+.pick .k { font-family: var(--f-mono); font-size: 12px; color: var(--c, var(--muted)); letter-spacing: .06em; }
+footer { color: var(--muted); font-size: 13px; border-top: 1px solid var(--line); padding-top: 16px; }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">2D 角色动画 · 交互演示</div>
+    <h1><span class="s">Spine</span><span class="vs">vs</span><span class="l">Live2D</span></h1>
+    <p class="lede">两者都让 2D 角色“动起来”，但思路不同。Spine 用<b>骨骼</b>带动一块块部件，像提线木偶；Live2D 用<b>参数</b>去扭曲一整张原画，像在插画上做立体感。下面两个实验台用同一套交互把差别摆出来。</p>
+  </header>
+
+  <section class="labs">
+    <!-- Spine -->
+    <article class="lab spine">
+      <div class="lab-head">
+        <span class="tag">SPINE · 骨骼动画</span>
+        <h3>骨骼层级 → 部件跟着骨头走</h3>
+        <p>每根骨头只存“相对父骨头”的旋转。转动大臂，小臂和手会一起动。</p>
+      </div>
+      <div class="stage">
+        <canvas id="spineCv" aria-label="Spine 风格骨骼角色动画"></canvas>
+        <div class="readout" id="spineOut"></div>
+      </div>
+      <div class="controls">
+        <div class="row seg" id="animSeg" role="group" aria-label="动画">
+          <button type="button" data-anim="idle" aria-pressed="true">待机 idle</button>
+          <button type="button" data-anim="walk" aria-pressed="false">走路 walk</button>
+          <button type="button" data-anim="wave" aria-pressed="false">挥手 wave</button>
+          <button type="button" data-anim="jump" aria-pressed="false">跳跃 jump</button>
+        </div>
+        <div class="row">
+          <label class="toggle"><input type="checkbox" id="spBones" checked> 显示骨骼</label>
+          <label class="toggle"><input type="checkbox" id="spSkin" checked> 显示部件</label>
+          <label class="toggle"><input type="checkbox" id="spMix" checked> 动画混合 0.3s</label>
+          <button type="button" class="chip" id="spSkinSwap">换装 skin</button>
+        </div>
+        <p class="note"><b>看点：</b>切换动画时开着“动画混合”，姿势会平滑过渡，关掉则瞬间跳变。“换装”只替换贴在骨骼上的图片，动画数据完全复用。</p>
+      </div>
+    </article>
+
+    <!-- Live2D -->
+    <article class="lab l2d">
+      <div class="lab-head">
+        <span class="tag">LIVE2D · 参数变形</span>
+        <h3>参数 → 网格变形 → 一张画“转过头”</h3>
+        <p>原画被切成图层并铺上网格，参数值决定网格怎样扭曲。没有骨头，只有一组可调的数值。</p>
+      </div>
+      <div class="stage">
+        <canvas id="l2dCv" aria-label="Live2D 风格参数变形头像"></canvas>
+        <div class="readout" id="l2dOut"></div>
+      </div>
+      <div class="controls">
+        <div class="sliders">
+          <label class="sl"><span>ParamAngleX</span><span id="v-ax">0</span><input type="range" id="p-ax" min="-30" max="30" step="1" value="0"></label>
+          <label class="sl"><span>ParamAngleY</span><span id="v-ay">0</span><input type="range" id="p-ay" min="-30" max="30" step="1" value="0"></label>
+          <label class="sl"><span>ParamAngleZ</span><span id="v-az">0</span><input type="range" id="p-az" min="-30" max="30" step="1" value="0"></label>
+          <label class="sl"><span>ParamEyeOpen</span><span id="v-eo">1.00</span><input type="range" id="p-eo" min="0" max="1" step="0.01" value="1"></label>
+          <label class="sl"><span>ParamMouthOpenY</span><span id="v-mo">0.00</span><input type="range" id="p-mo" min="0" max="1" step="0.01" value="0"></label>
+          <label class="sl"><span>ParamMouthForm</span><span id="v-mf">0.40</span><input type="range" id="p-mf" min="-1" max="1" step="0.01" value="0.4"></label>
+        </div>
+        <div class="row">
+          <label class="toggle"><input type="checkbox" id="lFollow" checked> 视线跟随指针</label>
+          <label class="toggle"><input type="checkbox" id="lGrid" checked> 显示变形网格</label>
+          <label class="toggle"><input type="checkbox" id="lAuto" checked> 自动眨眼/呼吸</label>
+          <button type="button" class="chip" id="lTalk">模拟说话（口型）</button>
+        </div>
+        <p class="note"><b>看点：</b>把指针移到头像上，或关掉“跟随”后拖 AngleX。脸没有旋转，是网格被挤压：近处的五官和刘海移得多，远处的后发反向移动，头发尖还带物理惯性。</p>
+      </div>
+    </article>
+  </section>
+
+  <section class="section">
+    <h2>逐项对比</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>维度</th><th class="s">SPINE</th><th class="l">LIVE2D (CUBISM)</th></tr></thead>
+        <tbody>
+          <tr><th>出品方</th><td>Esoteric Software</td><td>Live2D Inc.（日本）</td></tr>
+          <tr><th>核心原理</th><td>骨骼层级 + 插槽里的图片附件；可加网格蒙皮（权重）和网格自由变形</td><td>ArtMesh 网格 + 弯曲/旋转变形器，全部由<b>参数</b>驱动；参数之间可做多维混合</td></tr>
+          <tr><th>最擅长</th><td>全身动作：走、跑、跳、攻击、受击；大量角色同屏</td><td>半身立绘：转头、眨眼、口型、表情、呼吸，“会动的插画”</td></tr>
+          <tr><th>动画组织</th><td>时间轴关键帧动画，多轨道叠加与混合（如下半身走路 + 上半身挥手）</td><td>motion（参数曲线）+ expression（参数叠加）+ physics（头发/饰品摆动）+ 程序实时写参数</td></tr>
+          <tr><th>伪 3D 转身</th><td>能用网格变形做，但要手工逐帧调，角度有限</td><td>核心强项，一般可做到头部约 ±30° 的转动</td></tr>
+          <tr><th>美术要求</th><td>按部件切图，部件可复用，换装方便</td><td>一张分层很细的 PSD（眼白、瞳孔、睫毛、每束头发各一层），建模工作量集中</td></tr>
+          <tr><th>导出文件</th><td><code>.json</code>/<code>.skel</code> + <code>.atlas</code> + <code>.png</code></td><td><code>.moc3</code> + <code>.model3.json</code> + 纹理，另有 <code>.motion3.json</code> / <code>.exp3.json</code> / <code>.physics3.json</code></td></tr>
+          <tr><th>运行时</th><td>官方运行时覆盖 Unity、Unreal、Godot、Cocos、C/C++、Web（spine-ts / Pixi / Three.js）等</td><td>Cubism SDK for Native / Web / Unity / Java；Web 社区常用 pixi-live2d-display</td></tr>
+          <tr><th>实时驱动</th><td>可代码控制骨骼（IK、看向目标），但通常以播放预制动画为主</td><td>天然适合：面捕、TTS 音量驱动口型、情绪映射表情，VTuber 生态基于它</td></tr>
+          <tr><th>性能</th><td>轻量，适合同屏几十上百个角色</td><td>单模型网格与顶点多，通常同屏 1～2 个</td></tr>
+          <tr><th>授权方式</th><td>编辑器买断，分 Essential / Professional / Enterprise；集成运行时需要持有 Spine 授权</td><td>编辑器有免费版和付费订阅；用 SDK 发布商业产品需签出版许可，小规模事业者有优惠档。以官网最新条款为准</td></tr>
+          <tr><th>典型案例</th><td>大量手游的战斗小人，例如《明日方舟》的干员战斗动画</td><td>VTuber 模型（VTube Studio 等）、手游动态立绘与看板娘</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>怎么选</h2>
+    <div class="pick">
+      <div style="--c: var(--spine)">
+        <span class="k">选 SPINE</span>
+        <h3>角色要“全身动”</h3>
+        <ul>
+          <li>横版/战斗/场景游戏，动作种类多</li>
+          <li>同屏角色多，或要跑在低端设备上</li>
+          <li>需要换装、部件复用</li>
+        </ul>
+      </div>
+      <div style="--c: var(--l2d)">
+        <span class="k">选 LIVE2D</span>
+        <h3>角色要“对着你说话”</h3>
+        <ul>
+          <li>聊天、陪伴、直播这类近景半身场景</li>
+          <li>需要眼神跟随、口型同步、细腻表情</li>
+          <li>美术以一张精美立绘为核心</li>
+        </ul>
+      </div>
+      <div>
+        <span class="k">对 BONDHOP 而言</span>
+        <h3>陪伴形象优先 Live2D</h3>
+        <ul>
+          <li>聊天界面里角色是半身近景，表情和口型最重要</li>
+          <li>TTS 音量可直接写 <code>ParamMouthOpenY</code>，情绪标签映射到 expression</li>
+          <li>若以后要全身小人或场景互动，再引入 Spine 做 Q 版形象</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <footer>本页两个实验台用原生 Canvas 模拟两种技术的工作方式，便于对照理解，不是官方运行时渲染的效果。价格与授权条款会调整，商用前请查阅各自官网。</footer>
+</div>
+
+<script>
+(() => {
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function fit(cv) {
+    const r = cv.getBoundingClientRect(), d = Math.min(devicePixelRatio || 1, 2);
+    const w = Math.round(r.width * d), h = Math.round(r.height * d);
+    if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; }
+    const ctx = cv.getContext('2d');
+    ctx.setTransform(d, 0, 0, d, 0, 0);
+    return { ctx, w: r.width, h: r.height };
+  }
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+  /* ---------------- SPINE ---------------- */
+  const D = Math.PI / 180;
+  // bone: [name, parent, x, y, rotationDeg, length]  局部坐标：x 沿骨头方向
+  const BONES = [
+    ['root', null, 0, 0, 0, 0],
+    ['hip', 'root', 0, -118, -90, 0],
+    ['torso', 'hip', 0, 0, 0, 66],
+    ['neck', 'torso', 66, 0, 0, 12],
+    ['head', 'neck', 12, 0, 0, 46],
+    ['upperArmB', 'torso', 60, -20, 180, 40],
+    ['foreArmB', 'upperArmB', 40, 0, 0, 38],
+    ['upperArmF', 'torso', 60, 20, 180, 40],
+    ['foreArmF', 'upperArmF', 40, 0, 0, 38],
+    ['thighB', 'hip', 0, -12, 180, 52],
+    ['shinB', 'thighB', 52, 0, 0, 54],
+    ['thighF', 'hip', 0, 12, 180, 52],
+    ['shinF', 'thighF', 52, 0, 0, 54],
+  ];
+  const boneIx = Object.fromEntries(BONES.map((b, i) => [b[0], i]));
+
+  const ANIMS = {
+    idle: t => ({ hipY: Math.sin(t * 2.2) * 2, torso: Math.sin(t * 2.2) * 2, head: Math.sin(t * 1.1) * 4,
+      upperArmF: 6 + Math.sin(t * 2.2) * 4, upperArmB: -6 - Math.sin(t * 2.2) * 4, foreArmF: 8, foreArmB: -8 }),
+    walk: t => { const p = t * 6, s = Math.sin(p), c = Math.cos(p);
+      return { hipY: -Math.abs(Math.cos(p)) * 6 + 3, torso: 4, head: -3 + Math.sin(p * 2) * 1.5,
+        thighF: s * 30, thighB: -s * 30, shinF: Math.max(0, -c) * 45 * -1 + -6, shinB: Math.max(0, c) * 45 * -1 - 6,
+        upperArmF: -s * 28, upperArmB: s * 28, foreArmF: 18, foreArmB: 18 }; },
+    wave: t => ({ hipY: Math.sin(t * 2.2) * 2, torso: -3, head: 6 + Math.sin(t * 1.4) * 3,
+      upperArmF: -150, foreArmF: -40 + Math.sin(t * 9) * 32, upperArmB: -8, foreArmB: -10 }),
+    jump: t => { const p = (t * 1.25) % 1; let crouch, air;
+      if (p < .25) { crouch = Math.sin(p / .25 * Math.PI); air = 0; }
+      else if (p < .85) { crouch = 0; air = Math.sin((p - .25) / .6 * Math.PI); }
+      else { crouch = Math.sin((p - .85) / .15 * Math.PI) * .6; air = 0; }
+      return { hipY: crouch * 22 - air * 55, torso: crouch * 14 - air * 4, head: -crouch * 8,
+        thighF: crouch * 50 + air * 35, thighB: crouch * 50 + air * 20, shinF: -crouch * 90 - air * 70, shinB: -crouch * 90 - air * 50,
+        upperArmF: -crouch * 30 - air * 150, upperArmB: -crouch * 30 - air * 140, foreArmF: -air * 20, foreArmB: -air * 20 }; },
+  };
+  const SKINS = [
+    { name: 'default', shirt: '#3a7bd5', pants: '#2c3e57', skin: '#f2c9a8', hair: '#3b2a24', shoe: '#222831', acc: null },
+    { name: 'knight', shirt: '#8a96a8', pants: '#555f6e', skin: '#f2c9a8', hair: '#c9a24a', shoe: '#3d4450', acc: '#c0392b' },
+  ];
+  let skinI = 0, curAnim = 'idle', prevAnim = 'idle', mixT = 1, mixStart = 0;
+
+  function computeWorld(pose, ox, oy) {
+    const W = [];
+    for (const b of BONES) {
+      const [name, parent, x, y0, r] = b;
+      let y = y0, rot = r + (pose[name] || 0);
+      let lx = x, ly = y;
+      if (name === 'hip') ly = y + (pose.hipY || 0);
+      const c = Math.cos(rot * D), s = Math.sin(rot * D);
+      let m;
+      if (parent === null) m = [c, s, -s, c, ox + lx, oy + ly];
+      else {
+        const P = W[boneIx[parent]];
+        // world = parent * local
+        m = [P[0] * c + P[2] * s, P[1] * c + P[3] * s, P[0] * -s + P[2] * c, P[1] * -s + P[3] * c,
+             P[0] * lx + P[2] * ly + P[4], P[1] * lx + P[3] * ly + P[5]];
+      }
+      W.push(m);
+    }
+    return W;
+  }
+  function blendPose(a, b, t) {
+    const o = {}, keys = new Set([...Object.keys(a), ...Object.keys(b)]);
+    keys.forEach(k => o[k] = lerp(a[k] || 0, b[k] || 0, t));
+    return o;
+  }
+  function capsule(ctx, len, w, fill, stroke) {
+    const r = w / 2;
+    ctx.beginPath();
+    ctx.moveTo(0, -r); ctx.lineTo(len, -r); ctx.arc(len, 0, r, -Math.PI / 2, Math.PI / 2);
+    ctx.lineTo(0, r); ctx.arc(0, 0, r, Math.PI / 2, -Math.PI / 2); ctx.closePath();
+    ctx.fillStyle = fill; ctx.fill();
+    if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 1.5; ctx.stroke(); }
+  }
+  function shade(hex, k) {
+    const n = parseInt(hex.slice(1), 16), f = v => clamp(Math.round(v * k), 0, 255);
+    return `rgb(${f(n >> 16)},${f((n >> 8) & 255)},${f(n & 255)})`;
+  }
+
+  const spCv = document.getElementById('spineCv'), spOut = document.getElementById('spineOut');
+  const spBones = document.getElementById('spBones'), spSkin = document.getElementById('spSkin'), spMix = document.getElementById('spMix');
+  document.querySelectorAll('#animSeg button').forEach(btn => btn.addEventListener('click', () => {
+    if (btn.dataset.anim === curAnim) return;
+    prevAnim = curAnim; curAnim = btn.dataset.anim; mixStart = performance.now() / 1000;
+    document.querySelectorAll('#animSeg button').forEach(b => b.setAttribute('aria-pressed', String(b === btn)));
+  }));
+  document.getElementById('spSkinSwap').addEventListener('click', () => { skinI = (skinI + 1) % SKINS.length; });
+
+  function drawSpine(now) {
+    const { ctx, w, h } = fit(spCv);
+    const t = reduce ? 0.6 : now;
+    const C = { spine: css('--spine'), line: css('--line'), muted: css('--muted'), ink: css('--ink') };
+    ctx.clearRect(0, 0, w, h);
+    const scale = Math.min(1.1, h / 360), groundY = h * 0.9, cx = w / 2;
+
+    // ground
+    ctx.strokeStyle = C.line; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(0, groundY); ctx.lineTo(w, groundY); ctx.stroke();
+    const scroll = curAnim === 'walk' ? (t * 120) % 40 : 0;
+    ctx.strokeStyle = C.line;
+    for (let x = -scroll; x < w; x += 40) { ctx.beginPath(); ctx.moveTo(x, groundY); ctx.lineTo(x - 10, groundY + 8); ctx.stroke(); }
+
+    mixT = spMix.checked ? clamp((now - mixStart) / 0.3, 0, 1) : 1;
+    const pose = blendPose(ANIMS[prevAnim](t), ANIMS[curAnim](t), mixT);
+
+    ctx.save(); ctx.translate(cx, groundY); ctx.scale(scale, scale);
+    const W = computeWorld(pose, 0, 0);
+    const S = SKINS[skinI];
+
+    const slots = [
+      ['upperArmB', 13, shade(S.shirt, .78)], ['foreArmB', 11, shade(S.skin, .85)],
+      ['thighB', 17, shade(S.pants, .8)], ['shinB', 14, shade(S.pants, .8)],
+      ['torso', 40, S.shirt], ['thighF', 17, S.pants], ['shinF', 14, S.pants],
+      ['neck', 12, S.skin], ['head', 0, S.skin], ['upperArmF', 13, S.shirt], ['foreArmF', 11, S.skin],
+    ];
+    if (spSkin.checked) {
+      for (const [bn, wd, col] of slots) {
+        const m = W[boneIx[bn]], len = BONES[boneIx[bn]][5];
+        ctx.save(); ctx.transform(...m);
+        if (bn === 'head') {
+          ctx.beginPath(); ctx.arc(len * .5, 0, 26, 0, Math.PI * 2); ctx.fillStyle = col; ctx.fill();
+          ctx.beginPath(); ctx.arc(len * .5, 0, 28, -1.45, 1.45); ctx.closePath();
+          ctx.fillStyle = S.hair; ctx.fill();
+          if (S.acc) { ctx.beginPath(); ctx.moveTo(len * .5 + 26, -4); ctx.lineTo(len * .5 + 44, 0); ctx.lineTo(len * .5 + 26, 4); ctx.fillStyle = S.acc; ctx.fill(); }
+          ctx.fillStyle = '#1b2330';
+          ctx.beginPath(); ctx.arc(len * .45, 9, 3, 0, Math.PI * 2); ctx.fill();
+          ctx.beginPath(); ctx.arc(len * .45, -9, 3, 0, Math.PI * 2); ctx.fill();
+          ctx.strokeStyle = '#8a4b3c'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(len * .45, 0, 7, Math.PI * .7, Math.PI * 1.3); ctx.stroke();
+        } else if (bn === 'torso') {
+          ctx.beginPath(); ctx.roundRect(-6, -wd / 2, len + 6, wd, 12); ctx.fillStyle = col; ctx.fill();
+          if (S.acc) { ctx.fillStyle = S.acc; ctx.fillRect(len * .1, -wd / 2, 8, wd); }
+        } else {
+          capsule(ctx, len, wd, col);
+          if (bn.startsWith('shin')) { ctx.beginPath(); ctx.roundRect(len - 4, -8, 12, 22, 5); ctx.fillStyle = S.shoe; ctx.fill(); }
+        }
+        ctx.restore();
+      }
+    }
+    if (spBones.checked) {
+      for (let i = 1; i < BONES.length; i++) {
+        const m = W[i], len = BONES[i][5];
+        ctx.save(); ctx.transform(...m);
+        if (len) {
+          ctx.beginPath(); ctx.moveTo(0, -5); ctx.lineTo(len, 0); ctx.lineTo(0, 5); ctx.closePath();
+          ctx.fillStyle = C.spine; ctx.globalAlpha = spSkin.checked ? .75 : 1; ctx.fill(); ctx.globalAlpha = 1;
+        }
+        ctx.beginPath(); ctx.arc(0, 0, 4.5, 0, Math.PI * 2); ctx.fillStyle = '#fff'; ctx.fill();
+        ctx.strokeStyle = C.spine; ctx.lineWidth = 2; ctx.stroke();
+        ctx.restore();
+      }
+      // parent → child dashed links for offset bones
+      ctx.setLineDash([3, 3]); ctx.strokeStyle = C.spine; ctx.lineWidth = 1;
+      for (let i = 1; i < BONES.length; i++) {
+        const p = BONES[i][1]; if (!p) continue;
+        const a = W[boneIx[p]], b = W[i];
+        if (Math.hypot(a[4] - b[4], a[5] - b[5]) > 2 && BONES[i][3] !== 0) { ctx.beginPath(); ctx.moveTo(a[4], a[5]); ctx.lineTo(b[4], b[5]); ctx.stroke(); }
+      }
+      ctx.setLineDash([]);
+    }
+    ctx.restore();
+
+    const fa = pose.upperArmF || 0;
+    spOut.textContent =
+      `animation  ${curAnim}${mixT < 1 ? `  ← mix ${prevAnim} ${(mixT * 100) | 0}%` : ''}\n` +
+      `bones      ${BONES.length}   slots ${slots.length}\n` +
+      `skin       ${SKINS[skinI].name}\n` +
+      `upperArmF  ${(180 + fa).toFixed(0).padStart(4)}°`;
+  }
+
+  /* ---------------- LIVE2D ---------------- */
+  const l2dCv = document.getElementById('l2dCv'), l2dOut = document.getElementById('l2dOut');
+  const ids = ['ax', 'ay', 'az', 'eo', 'mo', 'mf'];
+  const inp = Object.fromEntries(ids.map(k => [k, document.getElementById('p-' + k)]));
+  const val = Object.fromEntries(ids.map(k => [k, document.getElementById('v-' + k)]));
+  const lFollow = document.getElementById('lFollow'), lGrid = document.getElementById('lGrid'), lAuto = document.getElementById('lAuto');
+  const P = { ax: 0, ay: 0, az: 0, eo: 1, mo: 0, mf: .4 };
+  let pointer = null, lastPointer = -10, talkUntil = 0;
+  const spring = { p: 0, v: 0, py: 0, vy: 0 };
+
+  ids.forEach(k => inp[k].addEventListener('input', () => {
+    if (['ax', 'ay', 'az'].includes(k)) lFollow.checked = false;
+    if (k === 'mo') talkUntil = 0;
+  }));
+  l2dCv.addEventListener('pointermove', e => {
+    const r = l2dCv.getBoundingClientRect();
+    pointer = { x: (e.clientX - r.left) / r.width, y: (e.clientY - r.top) / r.height };
+    lastPointer = performance.now() / 1000;
+  });
+  l2dCv.addEventListener('pointerleave', () => { pointer = null; });
+  document.getElementById('lTalk').addEventListener('click', () => { talkUntil = performance.now() / 1000 + 3.5; });
+
+  function blinkAt(t) {
+    const period = 3.6, ph = (t % period) / period;
+    const d = Math.abs(ph - 0.96) / 0.03;
+    return d < 1 ? d : 1;
+  }
+
+  function drawL2D(now) {
+    const { ctx, w, h } = fit(l2dCv);
+    const t = reduce ? 0 : now;
+    ctx.clearRect(0, 0, w, h);
+
+    // ---- update params ----
+    let tx = +inp.ax.value, ty = +inp.ay.value, tz = +inp.az.value;
+    if (lFollow.checked) {
+      if (pointer) { tx = clamp((pointer.x - .5) * 80, -30, 30); ty = clamp((.42 - pointer.y) * 80, -30, 30); tz = -tx * .25; }
+      else if (now - lastPointer > 1.5 && !reduce) { tx = Math.sin(t * .55) * 22; ty = Math.sin(t * .37 + 1) * 10; tz = Math.sin(t * .45) * 6; }
+      else { tx = ty = tz = 0; }
+    }
+    const k = lFollow.checked ? .12 : .35;
+    P.ax = lerp(P.ax, tx, k); P.ay = lerp(P.ay, ty, k); P.az = lerp(P.az, tz, k);
+    if (lFollow.checked) { inp.ax.value = Math.round(P.ax); inp.ay.value = Math.round(P.ay); inp.az.value = Math.round(P.az); }
+    let mo = +inp.mo.value;
+    if (now < talkUntil && !reduce) {
+      mo = clamp(.5 + .5 * Math.sin(t * 17) * Math.sin(t * 5.3 + 1) + .2 * Math.sin(t * 29), 0, 1) * .9;
+      inp.mo.value = mo.toFixed(2);
+    }
+    P.mo = lerp(P.mo, mo, .5);
+    P.mf = +inp.mf.value;
+    const auto = lAuto.checked && !reduce;
+    P.eo = +inp.eo.value * (auto ? blinkAt(t) : 1);
+    const breath = auto ? Math.sin(t * 1.8) : 0;
+    ids.forEach(k2 => {
+      const v = k2 === 'eo' ? P.eo : k2 === 'mo' ? P.mo : P[k2];
+      val[k2].textContent = (['ax', 'ay', 'az'].includes(k2) ? Math.round(v) : v.toFixed(2));
+    });
+
+    // hair physics (spring on AngleX / AngleY)
+    const target = P.ax / 30, targetY = P.ay / 30;
+    spring.v += (target - spring.p) * .08; spring.v *= .82; spring.p += spring.v;
+    spring.vy += (targetY - spring.py) * .08; spring.vy *= .82; spring.py += spring.vy;
+    const sway = (spring.p - target), swayY = (spring.py - targetY);
+
+    // ---- projection ----
+    const R = Math.min(w * .2, h * .26);
+    const cx = w / 2, cy = h * .45 + breath * 1.2;
+    const thY = P.ax / 30 * .52, thX = P.ay / 30 * .38, rz = P.az * D;
+    const surf = (x, y) => Math.sqrt(Math.max(0, R * R - x * x - (y * .92) ** 2)) * .9;
+    // f = 头部旋转的跟随比例（脖子、身体只跟一部分）
+    function proj(x, y, z, f = 1, wgt = 0) {
+      x += wgt * (sway * R * .9) * f;
+      y += wgt * (-swayY * R * .25);
+      const cyY = Math.cos(thY * f), syY = Math.sin(thY * f), cxX = Math.cos(thX * f), sxX = Math.sin(thX * f);
+      const x1 = x * cyY + z * syY, z1 = -x * syY + z * cyY;
+      const y1 = y * cxX - z1 * sxX;
+      const py = R * .95, a = rz * f, ca = Math.cos(a), sa = Math.sin(a);
+      const X = x1 * ca - (y1 - py) * sa, Y = x1 * sa + (y1 - py) * ca + py;
+      return [cx + X, cy + Y];
+    }
+    // shape helpers: pts = [[x,y,zOffset,onSurface,weight]]
+    const P3 = (pts, f = 1) => pts.map(([x, y, zo = 0, on = 1, wg = 0]) => proj(x, y, zo + (on ? surf(x, y) : 0), f, wg));
+    function smooth(pts, closed = true) {
+      ctx.beginPath();
+      const n = pts.length;
+      if (!closed) { ctx.moveTo(...pts[0]); for (let i = 1; i < n - 1; i++) { const mx = (pts[i][0] + pts[i + 1][0]) / 2, my = (pts[i][1] + pts[i + 1][1]) / 2; ctx.quadraticCurveTo(pts[i][0], pts[i][1], mx, my); } ctx.lineTo(...pts[n - 1]); return; }
+      const m0 = [(pts[n - 1][0] + pts[0][0]) / 2, (pts[n - 1][1] + pts[0][1]) / 2];
+      ctx.moveTo(...m0);
+      for (let i = 0; i < n; i++) { const a = pts[i], b = pts[(i + 1) % n]; ctx.quadraticCurveTo(a[0], a[1], (a[0] + b[0]) / 2, (a[1] + b[1]) / 2); }
+      ctx.closePath();
+    }
+    function poly(pts) { ctx.beginPath(); pts.forEach((p, i) => i ? ctx.lineTo(...p) : ctx.moveTo(...p)); ctx.closePath(); }
+    const ell = (ex, ey, rx, ry, n, zo, on, wg = 0) => Array.from({ length: n }, (_, i) => { const a = i / n * Math.PI * 2; return [ex + Math.cos(a) * rx, ey + Math.sin(a) * ry, zo, on, wg]; });
+
+    const COL = { skin: '#f7d9c4', skinSh: '#eab89e', hair: '#5a3c6e', hairHi: '#7b5793', hairSh: '#432b54', eye: '#3c6fb0', cloth: '#f4f4f7', clothSh: '#c9cbd6', ribbon: '#d94f7c', line: '#4a2f3b' };
+
+    // back hair
+    const back = [];
+    for (let i = 0; i <= 24; i++) { const a = Math.PI + i / 24 * Math.PI; back.push([Math.cos(a) * R * 1.22, Math.sin(a) * R * 1.25 + R * .05, -R * .45, 0, 0]); }
+    back.push([R * 1.28, R * .9, -R * .45, 0, .8], [R * 1.12, R * 1.75, -R * .5, 0, 1.4], [R * .55, R * 1.55, -R * .5, 0, 1.1],
+      [-R * .55, R * 1.55, -R * .5, 0, 1.1], [-R * 1.12, R * 1.75, -R * .5, 0, 1.4], [-R * 1.28, R * .9, -R * .45, 0, .8]);
+    smooth(P3(back)); ctx.fillStyle = COL.hairSh; ctx.fill();
+
+    // body + neck (rotate only partially)
+    const by = breath * 2;
+    const body = [[-R * 1.6, R * 3, -R * .2, 0], [-R * 1.45, R * 1.75 + by, -R * .2, 0], [-R * .9, R * 1.38 + by, -R * .1, 0], [-R * .25, R * 1.32 + by, 0, 0],
+      [R * .25, R * 1.32 + by, 0, 0], [R * .9, R * 1.38 + by, -R * .1, 0], [R * 1.45, R * 1.75 + by, -R * .2, 0], [R * 1.6, R * 3, -R * .2, 0]];
+    poly(P3(body, .18)); ctx.fillStyle = COL.cloth; ctx.fill();
+    const neck = [[-R * .2, R * .7, -R * .2, 0], [R * .2, R * .7, -R * .2, 0], [R * .22, R * 1.38 + by, -R * .1, 0], [-R * .22, R * 1.38 + by, -R * .1, 0]];
+    poly(P3(neck, .35)); ctx.fillStyle = COL.skinSh; ctx.fill();
+    const collar = [[-R * .6, R * 1.36 + by, R * .05, 0], [0, R * 1.62 + by, R * .1, 0], [R * .6, R * 1.36 + by, R * .05, 0], [R * .3, R * 1.33 + by, R * .05, 0], [0, R * 1.45 + by, R * .1, 0], [-R * .3, R * 1.33 + by, R * .05, 0]];
+    poly(P3(collar, .2)); ctx.fillStyle = COL.clothSh; ctx.fill();
+    const rib = [[0, R * 1.5 + by, R * .2, 0], [-R * .28, R * 1.38 + by, R * .2, 0], [-R * .3, R * 1.66 + by, R * .2, 0], [0, R * 1.52 + by, R * .2, 0], [R * .3, R * 1.66 + by, R * .2, 0], [R * .28, R * 1.38 + by, R * .2, 0]];
+    poly(P3(rib, .2)); ctx.fillStyle = COL.ribbon; ctx.fill();
+
+    // ears
+    for (const s of [-1, 1]) { smooth(P3(ell(s * R * .9, R * .1, R * .12, R * .18, 10, -R * .05, 0))); ctx.fillStyle = COL.skinSh; ctx.fill(); }
+
+    // face
+    const face = [];
+    for (let i = 0; i < 44; i++) {
+      const a = i / 44 * Math.PI * 2, s = Math.sin(a);
+      const xs = s > 0 ? 1 - .38 * s ** 2.2 : 1;
+      face.push([Math.cos(a) * R * .93 * xs, s * R * (s > 0 ? 1.0 : .98), R * .12, 0]);
+    }
+    smooth(P3(face)); ctx.fillStyle = COL.skin; ctx.fill();
+
+    // blush
+    for (const s of [-1, 1]) { smooth(P3(ell(s * R * .5, R * .42, R * .14, R * .06, 12, 2, 1))); ctx.fillStyle = 'rgba(240,120,130,.28)'; ctx.fill(); }
+
+    // eyes
+    const eyeW = R * .17, eyeH = R * .2, ey = R * .14;
+    for (const s of [-1, 1]) {
+      const ex = s * R * .37, o = clamp(P.eo, 0, 1);
+      const smile = clamp(P.mf, 0, 1) * .25;
+      const white = [];
+      for (let i = 0; i < 20; i++) { const a = i / 20 * Math.PI * 2, sy = Math.sin(a); white.push([ex + Math.cos(a) * eyeW, ey + sy * eyeH * (sy < 0 ? o : o * (1 - smile)) + (1 - o) * eyeH * .5, 3, 1]); }
+      if (o > .06) {
+        const wp = P3(white);
+        ctx.save(); smooth(wp); ctx.fillStyle = '#fff'; ctx.fill(); ctx.clip();
+        const lx = clamp(P.ax / 30, -1, 1) * eyeW * .35, ly = -clamp(P.ay / 30, -1, 1) * eyeH * .25;
+        smooth(P3(ell(ex + lx, ey + ly + eyeH * .1, eyeW * .78, eyeH * .92, 18, 4, 1))); ctx.fillStyle = COL.eye; ctx.fill();
+        smooth(P3(ell(ex + lx, ey + ly + eyeH * .15, eyeW * .4, eyeH * .5, 14, 5, 1))); ctx.fillStyle = '#1d2f55'; ctx.fill();
+        smooth(P3(ell(ex + lx - eyeW * .3, ey + ly - eyeH * .3, eyeW * .2, eyeH * .17, 10, 6, 1))); ctx.fillStyle = 'rgba(255,255,255,.95)'; ctx.fill();
+        ctx.restore();
+      }
+      // upper lash
+      const lash = [];
+      for (let i = 0; i <= 10; i++) { const a = Math.PI + i / 10 * Math.PI; lash.push([ex + Math.cos(a) * eyeW * 1.12, ey + Math.sin(a) * eyeH * o + (1 - o) * eyeH * .5 - 1, 6, 1]); }
+      smooth(P3(lash), false); ctx.strokeStyle = COL.line; ctx.lineWidth = Math.max(2.5, R * .045); ctx.lineCap = 'round'; ctx.stroke();
+      // brow
+      const bry = -R * .2 - (1 - o) * -R * .02 - clamp(P.mf, -1, 0) * -R * .04;
+      const brow = [[ex - s * eyeW * 1.0, bry + R * .03, 5, 1], [ex, bry - R * .02, 5, 1], [ex + s * eyeW * 1.0, bry + R * .01, 5, 1]];
+      smooth(P3(brow), false); ctx.strokeStyle = COL.hairSh; ctx.lineWidth = Math.max(2, R * .03); ctx.stroke();
+    }
+
+    // nose
+    smooth(P3([[R * .0, R * .36, 8, 1], [R * .03, R * .4, 8, 1], [0, R * .42, 8, 1]]), false);
+    ctx.strokeStyle = COL.skinSh; ctx.lineWidth = 2; ctx.stroke();
+
+    // mouth
+    const mw = R * .17, my = R * .62, mo2 = P.mo, mf = P.mf;
+    const cornerY = my - mf * R * .07;
+    const up = [[-mw, cornerY, 6, 1], [-mw * .5, my - mo2 * R * .02, 6, 1], [0, my - mo2 * R * .03 - R * .005, 6, 1], [mw * .5, my - mo2 * R * .02, 6, 1], [mw, cornerY, 6, 1]];
+    const lowY = my + mo2 * R * .22 + mf * R * .03;
+    const low = [[mw * .7, (cornerY + lowY) / 2 + mo2 * R * .04, 6, 1], [0, lowY, 6, 1], [-mw * .7, (cornerY + lowY) / 2 + mo2 * R * .04, 6, 1]];
+    if (mo2 > .04) {
+      smooth(P3([...up, ...low])); ctx.fillStyle = '#9b3346'; ctx.fill();
+      ctx.save(); ctx.clip();
+      smooth(P3(ell(0, lowY - R * .02, mw * .55, R * .06 * mo2 + 2, 10, 6, 1))); ctx.fillStyle = '#e57a8a'; ctx.fill();
+      ctx.restore();
+    } else {
+      smooth(P3(up), false); ctx.strokeStyle = '#9b3346'; ctx.lineWidth = 2.2; ctx.stroke();
+    }
+
+    // side locks (physics weight grows toward tip)
+    for (const s of [-1, 1]) {
+      const lock = [[s * R * .78, -R * .55, R * .3, 0, 0], [s * R * 1.0, -R * .1, R * .25, 0, .2], [s * R * 1.02, R * .5, R * .2, 0, .6], [s * R * .92, R * 1.15, R * .18, 0, 1.1],
+        [s * R * .78, R * 1.3, R * .18, 0, 1.3], [s * R * .76, R * .6, R * .22, 0, .6], [s * R * .72, R * .05, R * .28, 0, .2]];
+      smooth(P3(lock)); ctx.fillStyle = COL.hair; ctx.fill();
+    }
+
+    // bangs
+    const bang = [];
+    for (let i = 0; i <= 18; i++) { const a = Math.PI * 1.06 + i / 18 * Math.PI * .88; bang.push([Math.cos(a) * R * 1.08, Math.sin(a) * R * 1.1 - R * .02, R * .35, 0, 0]); }
+    const spikes = [[.92, -.1], [.74, .12], [.6, -.18], [.4, .02], [.22, -.2], [.05, -.02], [-.12, -.22], [-.3, .0], [-.48, -.2], [-.66, .1], [-.8, -.12], [-.95, .05]];
+    for (const [sx, sy] of spikes) bang.push([sx * R, sy * R, R * .38, 0, sy > -.05 ? .55 : .2]);
+    smooth(P3(bang)); ctx.fillStyle = COL.hair; ctx.fill();
+    // hair highlight band
+    const hl = [];
+    for (let i = 0; i <= 10; i++) { const a = Math.PI * 1.22 + i / 10 * Math.PI * .56; hl.push([Math.cos(a) * R * .82, Math.sin(a) * R * .82 + R * .05, R * .55, 0, 0]); }
+    smooth(P3(hl), false); ctx.strokeStyle = COL.hairHi; ctx.lineWidth = R * .06; ctx.lineCap = 'round'; ctx.stroke();
+    // ahoge
+    smooth(P3([[R * .05, -R * 1.08, R * .3, 0, 0], [R * .25, -R * 1.45, R * .3, 0, .9], [R * .4, -R * 1.38, R * .3, 0, 1.2]]), false);
+    ctx.strokeStyle = COL.hair; ctx.lineWidth = R * .045; ctx.stroke();
+
+    // deform grid overlay (head warp deformer)
+    if (lGrid.checked) {
+      ctx.strokeStyle = css('--grid'); ctx.lineWidth = 1;
+      const N = 8, ext = R * 1.3;
+      const gz = (x, y) => surf(x, y) * .7 + R * .1;
+      for (let i = 0; i <= N; i++) {
+        const u = -ext + 2 * ext * i / N;
+        const a = [], b = [];
+        for (let j = 0; j <= 24; j++) { const v = -ext + 2 * ext * j / 24; a.push(proj(u, v, gz(u, v))); b.push(proj(v, u, gz(v, u))); }
+        smooth(a, false); ctx.stroke(); smooth(b, false); ctx.stroke();
+      }
+      ctx.fillStyle = css('--l2d');
+      for (let i = 0; i <= N; i += 2) for (let j = 0; j <= N; j += 2) {
+        const u = -ext + 2 * ext * i / N, v = -ext + 2 * ext * j / N, p = proj(u, v, gz(u, v));
+        ctx.fillRect(p[0] - 2, p[1] - 2, 4, 4);
+      }
+    }
+
+    l2dOut.textContent =
+      `parameters → deformers\n` +
+      `AngleX ${P.ax.toFixed(1).padStart(6)}  AngleY ${P.ay.toFixed(1).padStart(6)}\n` +
+      `EyeOpen ${P.eo.toFixed(2)}  Mouth ${P.mo.toFixed(2)}\n` +
+      `hair physics ${(sway * 100).toFixed(0).padStart(4)}`;
+  }
+
+  function frame(ms) {
+    const now = ms / 1000;
+    drawSpine(now);
+    drawL2D(now);
+    if (!reduce) requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+  if (reduce) {
+    const redraw = () => frame(performance.now());
+    document.querySelectorAll('input, button').forEach(el => { el.addEventListener('input', redraw); el.addEventListener('click', redraw); });
+    l2dCv.addEventListener('pointermove', redraw);
+    addEventListener('resize', redraw);
+  }
+})();
+</script>
