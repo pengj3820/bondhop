@@ -1308,7 +1308,8 @@ def main():
         for i in range(len(scenes)):
             f.write(f"file 'scene_{i:02d}.mp4'\n")
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", f"{BUILD}/list.txt",
-                    "-i", f"{BUILD}/narration.wav", "-c:v", "copy", "-c:a", "aac", "-b:a", "128k", "-shortest",
+                    "-i", f"{BUILD}/narration.wav", "-c:v", "copy", "-af", "loudnorm=I=-16:TP=-1.5", "-c:a", "aac", "-b:a", "160k", "-ar", "44100", "-ac", "2",
+                    "-shortest",
                     "-movflags", "+faststart", f"{BUILD}/how-planes-fly.mp4"], check=True)
     print("total", sum(S.nframes for S in scenes) / FPS, "s")
 
