@@ -1,7 +1,9 @@
 {
- "sliver_px_filled": 785,
- "garment_px": 180250,
- "must_cover_ratio": 1.0,
- "pass": true,
- "body_visible_in_region_px": 49108
+ "sheer": false,
+ "key": "green",
+ "sliver_px_filled": 496,
+ "garment_px": 165171,
+ "must_cover_ratio": 0.9999,
+ "cut_at_band_px": 0,
+ "pass": true
 }

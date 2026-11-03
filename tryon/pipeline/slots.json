@@ -1,0 +1,148 @@
+{
+ "_doc": "z: draw order (base body = 0, negative = behind the body). band: editable rows. allow: extra body parts a garment of this slot may cover (face is never editable). must_cover: [y0,y1,x0,x1] zone of the body the garment must cover (QA).",
+ "wings": {
+  "z": -10,
+  "label": "背饰/翅膀",
+  "band": [
+   0,
+   1536
+  ],
+  "allow": [
+   "hands",
+   "feet"
+  ]
+ },
+ "legwear": {
+  "z": 10,
+  "label": "袜子",
+  "band": [
+   "crotch-120",
+   1536
+  ],
+  "allow": [
+   "feet"
+  ]
+ },
+ "shoes": {
+  "z": 20,
+  "label": "鞋",
+  "band": [
+   "ankle-220",
+   1536
+  ],
+  "allow": [
+   "feet"
+  ]
+ },
+ "bottom": {
+  "z": 30,
+  "label": "下装",
+  "band": [
+   "waist-50",
+   1536
+  ],
+  "allow": [
+   "feet"
+  ],
+  "must_cover": [
+   "hip",
+   "crotch+40",
+   390,
+   635
+  ]
+ },
+ "dress": {
+  "z": 35,
+  "label": "连衣裙",
+  "band": [
+   "chin+8",
+   1536
+  ],
+  "allow": [
+   "feet"
+  ],
+  "must_cover": [
+   "bust",
+   "crotch+40",
+   420,
+   605
+  ]
+ },
+ "top": {
+  "z": 40,
+  "label": "上衣",
+  "band": [
+   "chin+8",
+   "crotch+30"
+  ],
+  "allow": [],
+  "must_cover": [
+   "bust+20",
+   "waist-10",
+   420,
+   605
+  ]
+ },
+ "overskirt": {
+  "z": 50,
+  "label": "外层纱裙",
+  "band": [
+   "waist-50",
+   1536
+  ],
+  "allow": [
+   "feet"
+  ]
+ },
+ "arms": {
+  "z": 55,
+  "label": "袖套",
+  "band": [
+   "shoulder-40",
+   "wrist+120"
+  ],
+  "allow": []
+ },
+ "gloves": {
+  "z": 60,
+  "label": "手套",
+  "band": [
+   "wrist-160",
+   "crotch+170"
+  ],
+  "allow": [
+   "hands"
+  ]
+ },
+ "coat": {
+  "z": 70,
+  "label": "外套",
+  "band": [
+   "chin+8",
+   1536
+  ],
+  "allow": [
+   "feet"
+  ]
+ },
+ "neck": {
+  "z": 75,
+  "label": "颈饰",
+  "band": [
+   "chin-10",
+   "bust"
+  ],
+  "allow": []
+ },
+ "head": {
+  "z": 80,
+  "label": "头饰",
+  "band": [
+   0,
+   "neck+10"
+  ],
+  "allow": [
+   "hair"
+  ]
+ }
+}

@@ -1,16 +1,109 @@
 [
-  {"id": "top_white_puff", "category": "top", "name": "白色泡泡袖短衬衫",
-   "desc": "a white cotton blouse with short puff sleeves, a small rounded collar and front buttons, hem ending just below the waist"},
-  {"id": "top_black_tee", "category": "top", "name": "黑色修身短袖T恤",
-   "desc": "a plain black fitted crew-neck short-sleeve cotton t-shirt, hem ending at the hip"},
-  {"id": "top_stripe_knit", "category": "top", "name": "海军蓝条纹长袖针织衫",
-   "desc": "a navy and white horizontal striped long-sleeve knit sweater with a boat neckline, sleeves ending at the wrists, hem at the hip"},
-  {"id": "bottom_beige_skirt", "category": "bottom", "name": "米色高腰A字裙",
-   "desc": "a beige high-waisted A-line midi skirt in light wool, ending just below the knees"},
-  {"id": "bottom_blue_jeans", "category": "bottom", "name": "浅蓝直筒牛仔裤",
-   "desc": "light-blue high-waisted straight-leg denim jeans with a belt loop waistband, full length ending at the ankles"},
-  {"id": "dress_red_floral", "category": "dress", "name": "红色碎花吊带连衣裙",
-   "desc": "a red floral print slip dress with thin spaghetti straps and a square neckline, flowing skirt ending at mid-calf"},
-  {"id": "coat_camel_long", "category": "coat", "name": "驼色长款大衣（敞开）",
-   "desc": "a camel wool long coat with notched lapels and long sleeves, worn completely OPEN and unbuttoned so the front of the body is visible between the two coat panels, hem below the knees"}
+ {
+  "id": "top_white_puff",
+  "name": "白色泡泡袖短衬衫",
+  "desc": "a white cotton blouse with short puff sleeves, a small rounded collar and front buttons, hem ending just below the waist",
+  "slot": "top"
+ },
+ {
+  "id": "top_black_tee",
+  "name": "黑色修身短袖T恤",
+  "desc": "a plain black fitted crew-neck short-sleeve cotton t-shirt, hem ending at the hip",
+  "slot": "top"
+ },
+ {
+  "id": "top_stripe_knit",
+  "name": "海军蓝条纹长袖针织衫",
+  "desc": "a navy and white horizontal striped long-sleeve knit sweater with a boat neckline, sleeves ending at the wrists, hem at the hip",
+  "slot": "top"
+ },
+ {
+  "id": "bottom_beige_skirt",
+  "name": "米色高腰A字裙",
+  "desc": "a beige high-waisted A-line midi skirt in light wool, ending just below the knees",
+  "slot": "bottom"
+ },
+ {
+  "id": "bottom_blue_jeans",
+  "name": "浅蓝直筒牛仔裤",
+  "desc": "light-blue high-waisted straight-leg denim jeans with a belt loop waistband, full length ending at the ankles",
+  "slot": "bottom"
+ },
+ {
+  "id": "dress_red_floral",
+  "name": "红色碎花吊带连衣裙",
+  "desc": "a red floral print slip dress with thin spaghetti straps and a square neckline, flowing skirt ending at mid-calf",
+  "slot": "dress"
+ },
+ {
+  "id": "coat_camel_long",
+  "name": "驼色长款大衣（敞开）",
+  "desc": "a camel wool long coat with notched lapels and long sleeves, worn completely OPEN and unbuttoned so the front of the body is visible between the two coat panels, hem below the knees",
+  "slot": "coat"
+ },
+ {
+  "id": "top_corset_gothic",
+  "slot": "top",
+  "name": "哥特蕾丝胸衣",
+  "desc": "a black lace corset bodice with crimson satin panels, front lacing and a sweetheart neckline, sleeveless and strapless, ending at the natural waist"
+ },
+ {
+  "id": "arms_lace_sleeves",
+  "slot": "arms",
+  "name": "黑色蕾丝泡泡袖套",
+  "sheer": true,
+  "desc": "a pair of detached long sheer black lace puff sleeves (arm warmers) covering each arm from the shoulder to the wrist, with ruffled lace cuffs; nothing on the torso"
+ },
+ {
+  "id": "overskirt_tulle_highlow",
+  "slot": "overskirt",
+  "name": "黑红纱质前短后长裙",
+  "sheer": true,
+  "desc": "a layered ruffled skirt of sheer black and deep crimson tulle and lace, worn at the waist, high-low cut: short above the knees in front and falling to the floor at the back so its back panel is visible on both sides of and between the legs"
+ },
+ {
+  "id": "legwear_sheer_black",
+  "slot": "legwear",
+  "name": "黑色透肉长筒袜",
+  "sheer": true,
+  "desc": "sheer semi-transparent black over-the-knee socks made of fine nylon, reaching just above the knees, covering the feet; nothing else"
+ },
+ {
+  "id": "shoes_platform_boots",
+  "slot": "shoes",
+  "name": "黑色厚底系带短靴",
+  "desc": "black chunky platform lace-up ankle boots with thick soles, worn on both feet"
+ },
+ {
+  "id": "wings_black_feather",
+  "slot": "wings",
+  "name": "黑色羽毛翅膀",
+  "desc": "a pair of large black feathered angel wings attached behind her back, spreading out to both sides behind her shoulders and arms; the wings are BEHIND the body, nothing else is worn"
+ },
+ {
+  "id": "head_cat_ears",
+  "slot": "head",
+  "name": "黑色毛绒猫耳发箍",
+  "desc": "a black fluffy cat-ear headband with pink inner ears on top of her head. The flat bright green on her head is a chroma-key hair cover: keep it flat green, only add the cat ears headband"
+ },
+ {
+  "id": "gloves_cat_paw",
+  "slot": "gloves",
+  "name": "黑色毛绒猫爪手套",
+  "desc": "fluffy black cat paw mittens with pink paw pads covering both hands up to the wrists"
+ },
+ {
+  "id": "dress_fairy_vines",
+  "slot": "dress",
+  "name": "森系藤蔓纱裙",
+  "key": "magenta",
+  "sheer": true,
+  "desc": "an ethereal fairy dress of layered sheer pale sage-green tulle decorated with climbing green ivy vines and small leaves, sweetheart bodice, flowing floor-length skirt"
+ },
+ {
+  "id": "neck_lace_choker",
+  "slot": "neck",
+  "name": "黑色蕾丝项圈",
+  "desc": "a black lace choker necklace with a small dark red gem pendant around her neck; nothing else"
+ }
 ]

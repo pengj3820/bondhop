@@ -1,14 +1,21 @@
 {
-  "canvas": [1024, 1536],
-  "chin_y": 300,
-  "neck_y": 318,
-  "shoulder_y": 365,
-  "bust_y": 470,
-  "waist_y": 600,
-  "hip_y": 700,
-  "crotch_y": 830,
-  "wrist_y": 775,
-  "knee_y": 1060,
-  "ankle_y": 1345,
-  "hand_x_inner": [340, 690]
+ "canvas": [
+  1024,
+  1536
+ ],
+ "chin_y": 300,
+ "neck_y": 318,
+ "shoulder_y": 365,
+ "bust_y": 470,
+ "waist_y": 600,
+ "hip_y": 700,
+ "crotch_y": 830,
+ "wrist_y": 775,
+ "knee_y": 1060,
+ "ankle_y": 1345,
+ "hand_x_inner": [
+  340,
+  690
+ ],
+ "hair_bottom_y": 245
 }

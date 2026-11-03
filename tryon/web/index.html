@@ -1,0 +1,228 @@
+<title>固定模特换装台</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<style>
+/* Layout: fitting room — the model stands on the left like a mirror, the wardrobe rail sits on the right. */
+:root {
+  --bg: #ecebe8;
+  --panel: #f7f6f4;
+  --ink: #23201f;
+  --muted: #6d6864;
+  --line: #d8d4cf;
+  --accent: #6a2c55;
+  --accent-soft: #ead9e3;
+  --stage: #e3e1dd;
+  --font-display: "Noto Serif SC", "Songti SC", "STSong", serif;
+  --font-body: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1b191b; --panel: #242124; --ink: #ece8e6; --muted: #a59ea0; --line: #3a3539;
+    --accent: #d59bc2; --accent-soft: #3d2a37; --stage: #2a272a; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #1b191b; --panel: #242124; --ink: #ece8e6; --muted: #a59ea0; --line: #3a3539;
+  --accent: #d59bc2; --accent-soft: #3d2a37; --stage: #2a272a; color-scheme: dark;
+}
+html, body { height: 100%; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 14px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 16px; box-sizing: border-box;
+}
+.app { display: grid; grid-template-columns: minmax(280px, 520px) minmax(0, 1fr); gap: 20px; max-width: 1200px; margin: 0 auto; height: 100%; }
+.stage {
+  background: var(--stage); border-radius: 6px; position: relative; display: flex; flex-direction: column;
+  min-height: 0;
+}
+.stage canvas { width: 100%; height: 100%; object-fit: contain; display: block; min-height: 0; flex: 1; }
+.stage .status { position: absolute; left: 12px; bottom: 10px; font-size: 12px; color: var(--muted); }
+.side { display: flex; flex-direction: column; gap: 14px; min-width: 0; min-height: 0; }
+header h1 { font-family: var(--font-display); font-size: 22px; margin: 0; letter-spacing: 0.02em; text-wrap: balance; }
+header p { margin: 4px 0 0; color: var(--muted); font-size: 13px; line-height: 1.6; }
+.worn { display: flex; flex-wrap: wrap; gap: 6px; min-height: 30px; align-items: center; }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px; padding: 4px 6px 4px 10px; border-radius: 999px;
+  background: var(--accent-soft); color: var(--ink); font-size: 12px; border: 0; cursor: pointer; font-family: inherit;
+}
+.chip b { font-weight: 500; color: var(--muted); }
+.chip span.x { width: 18px; height: 18px; border-radius: 50%; display: inline-grid; place-items: center; color: var(--accent); }
+.chip:hover span.x { background: var(--panel); }
+.empty { color: var(--muted); font-size: 12px; }
+.controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.btn {
+  font-family: inherit; font-size: 13px; padding: 7px 12px; border-radius: 6px; border: 1px solid var(--line);
+  background: var(--panel); color: var(--ink); cursor: pointer;
+}
+.btn:hover { border-color: var(--accent); }
+.btn[aria-pressed="true"] { background: var(--accent); color: var(--panel); border-color: var(--accent); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.presets { display: flex; flex-wrap: wrap; gap: 6px; }
+.presets .label, .tabs .label { font-size: 11px; letter-spacing: 0.08em; color: var(--muted); width: 100%; }
+.tabs { display: flex; flex-wrap: wrap; gap: 4px; }
+.tab {
+  font-family: inherit; font-size: 13px; padding: 5px 10px; border-radius: 4px; border: 0; background: transparent;
+  color: var(--muted); cursor: pointer;
+}
+.tab[aria-selected="true"] { color: var(--ink); background: var(--panel); box-shadow: inset 0 -2px 0 var(--accent); }
+.rail { overflow-y: auto; min-height: 0; flex: 1; padding-right: 2px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 10px; }
+.item {
+  font-family: inherit; text-align: left; padding: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden;
+  background: var(--panel); color: var(--ink); cursor: pointer; display: flex; flex-direction: column;
+}
+.item img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; background: #f4f2ee; }
+.item .meta { padding: 6px 8px 8px; display: flex; flex-direction: column; gap: 2px; }
+.item .name { font-size: 12.5px; line-height: 1.35; }
+.item .slot { font-size: 11px; color: var(--muted); display: flex; gap: 6px; }
+.item .tag { color: var(--accent); }
+.item[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent) inset; }
+.item:focus-visible, .btn:focus-visible, .tab:focus-visible, .chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.note { font-size: 12px; color: var(--muted); line-height: 1.6; border-top: 1px solid var(--line); padding-top: 10px; }
+@media (max-width: 760px) {
+  html, body { height: auto; }
+  .app { grid-template-columns: 1fr; height: auto; }
+  .stage { height: 70vh; max-height: 640px; }
+  .rail { overflow: visible; }
+}
+</style>
+
+<div class="app">
+  <div class="stage">
+    <canvas id="cv" width="1024" height="1536" aria-label="换装预览"></canvas>
+    <div class="status" id="status">加载中…</div>
+  </div>
+  <div class="side">
+    <header>
+      <h1>固定模特换装台</h1>
+      <p>每件单品都是离线用 AI 穿在同一位模特身上生成，再抠成对齐的透明图层；这里换装只做图层叠加，不调用 AI。</p>
+    </header>
+    <div class="worn" id="worn" aria-live="polite"></div>
+    <div class="controls">
+      <button class="btn" id="tuck" aria-pressed="false" disabled>上衣塞进下装</button>
+      <button class="btn" id="clear">全部脱下</button>
+    </div>
+    <div class="presets" id="presets"><span class="label">示例搭配</span></div>
+    <div class="tabs" id="tabs" role="tablist"></div>
+    <div class="rail"><div class="grid" id="grid"></div></div>
+    <div class="note">规则：每个部位只能穿一件；连衣裙与上衣、下装互斥；穿外套时内搭只显示在外套轮廓内；"塞进下装"时上衣在腰头以下被遮住。带"薄纱"标记的单品是真实半透明图层。</div>
+  </div>
+</div>
+
+<script>
+const PRESETS = [
+  { name: "哥特洛丽塔", ids: ["top_corset_gothic", "arms_lace_sleeves", "overskirt_tulle_highlow", "legwear_sheer_black", "shoes_platform_boots", "neck_lace_choker"] },
+  { name: "暗黑天使", ids: ["wings_black_feather", "top_corset_gothic", "overskirt_tulle_highlow", "legwear_sheer_black", "shoes_platform_boots"] },
+  { name: "猫咪", ids: ["head_cat_ears", "gloves_cat_paw", "top_black_tee", "bottom_beige_skirt", "shoes_platform_boots"] },
+  { name: "森系精灵", ids: ["dress_fairy_vines", "wings_black_feather"] },
+  { name: "通勤", ids: ["top_white_puff", "bottom_blue_jeans", "coat_camel_long"] },
+];
+const cv = document.getElementById("cv"), ctx = cv.getContext("2d");
+const off = document.createElement("canvas"); off.width = 1024; off.height = 1536;
+const octx = off.getContext("2d");
+const state = { worn: {}, tuck: false, tab: "all" };
+let M, byId = {}; const imgs = {};
+
+function load(src) {
+  if (!imgs[src]) imgs[src] = new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; });
+  return imgs[src];
+}
+function wornItems() { return Object.values(state.worn).map(id => byId[id]).filter(Boolean); }
+
+async function render() {
+  const items = wornItems();
+  const status = document.getElementById("status");
+  status.textContent = "合成中…";
+  const coat = items.find(i => i.slot === "coat");
+  const bottom = items.find(i => i.slot === "bottom");
+  const top = items.find(i => i.slot === "top");
+  const tuck = state.tuck && top && bottom && bottom.tuckClip;
+  const layers = [{ src: M.base, z: 0 }].concat(items.map(it => ({
+    src: it.layer, it,
+    z: (tuck && it.slot === M.rules.tuckSlot) ? M.rules.tuckZ : M.slots[it.slot].z,
+  }))).sort((a, b) => a.z - b.z);
+  const needed = [...layers.map(l => l.src), coat && coat.innerClip, tuck && bottom.tuckClip].filter(Boolean);
+  const loaded = {}; await Promise.all(needed.map(async s => loaded[s] = await load(s)));
+  ctx.clearRect(0, 0, 1024, 1536);
+  for (const l of layers) {
+    const clips = [];
+    if (l.it && coat && M.rules.innerUnderCoat.includes(l.it.slot) && l.z < M.slots.coat.z) clips.push(loaded[coat.innerClip]);
+    if (l.it && tuck && l.it.slot === M.rules.tuckSlot) clips.push(loaded[bottom.tuckClip]);
+    if (!clips.length) { ctx.drawImage(loaded[l.src], 0, 0); continue; }
+    octx.globalCompositeOperation = "source-over"; octx.clearRect(0, 0, 1024, 1536);
+    octx.drawImage(loaded[l.src], 0, 0);
+    octx.globalCompositeOperation = "destination-in";
+    for (const c of clips) octx.drawImage(c, 0, 0);
+    octx.globalCompositeOperation = "source-over";
+    ctx.drawImage(off, 0, 0);
+  }
+  status.textContent = items.length ? `已穿 ${items.length} 件` : "未穿任何单品";
+}
+
+function wear(id) {
+  const it = byId[id]; if (!it) return;
+  if (state.worn[it.slot] === id) { delete state.worn[it.slot]; }
+  else {
+    for (const [a, b] of M.rules.exclusive) {
+      if (it.slot === a) delete state.worn[b];
+      if (it.slot === b) delete state.worn[a];
+    }
+    state.worn[it.slot] = id;
+  }
+  update();
+}
+function update() {
+  const items = wornItems();
+  const worn = document.getElementById("worn");
+  worn.replaceChildren(...(items.length ? items.sort((a, b) => M.slots[a.slot].z - M.slots[b.slot].z).map(it => {
+    const b = document.createElement("button"); b.className = "chip"; b.type = "button";
+    b.innerHTML = `<b>${M.slots[it.slot].label}</b>${it.name}<span class="x" aria-hidden="true">×</span>`;
+    b.setAttribute("aria-label", `脱下${it.name}`); b.onclick = () => wear(it.id); return b;
+  }) : [Object.assign(document.createElement("span"), { className: "empty", textContent: "点右侧单品给模特穿上，再点一次脱下。" })]));
+  const tuckBtn = document.getElementById("tuck");
+  const can = !!(state.worn.top && state.worn.bottom);
+  tuckBtn.disabled = !can; tuckBtn.setAttribute("aria-pressed", String(can && state.tuck));
+  document.querySelectorAll(".item").forEach(el => el.setAttribute("aria-pressed", String(state.worn[byId[el.dataset.id].slot] === el.dataset.id)));
+  render();
+}
+function drawGrid() {
+  const grid = document.getElementById("grid");
+  const list = M.items.filter(i => state.tab === "all" || i.slot === state.tab);
+  grid.replaceChildren(...list.map(it => {
+    const b = document.createElement("button"); b.className = "item"; b.type = "button"; b.dataset.id = it.id;
+    b.innerHTML = `<img src="${it.thumb}" alt="" loading="lazy"><span class="meta"><span class="name">${it.name}</span>` +
+      `<span class="slot">${M.slots[it.slot].label}${it.sheer ? '<span class="tag">薄纱</span>' : ""}</span></span>`;
+    b.onclick = () => wear(it.id); return b;
+  }));
+  update();
+}
+function drawTabs() {
+  const tabs = document.getElementById("tabs");
+  const used = [...new Set(M.items.map(i => i.slot))].sort((a, b) => M.slots[a].z - M.slots[b].z);
+  const mk = (key, label) => {
+    const b = document.createElement("button"); b.className = "tab"; b.type = "button"; b.role = "tab";
+    b.textContent = label; b.setAttribute("aria-selected", String(state.tab === key));
+    b.onclick = () => { state.tab = key; drawTabs(); drawGrid(); }; return b;
+  };
+  tabs.replaceChildren(mk("all", "全部"), ...used.map(s => mk(s, M.slots[s].label)));
+}
+
+(async function start() {
+  M = await (await fetch("manifest.json")).json();
+  M.items.forEach(i => byId[i.id] = i);
+  const presets = document.getElementById("presets");
+  for (const p of PRESETS) {
+    const ids = p.ids.filter(id => byId[id]); if (!ids.length) continue;
+    const b = document.createElement("button"); b.className = "btn"; b.type = "button"; b.textContent = p.name;
+    b.onclick = () => { state.worn = {}; ids.forEach(id => state.worn[byId[id].slot] = id); state.tuck = false; update(); };
+    presets.appendChild(b);
+  }
+  document.getElementById("tuck").onclick = () => { state.tuck = !state.tuck; update(); };
+  document.getElementById("clear").onclick = () => { state.worn = {}; update(); };
+  PRESETS[0].ids.filter(id => byId[id]).forEach(id => state.worn[byId[id].slot] = id);
+  drawTabs(); drawGrid();
+})().catch(e => { document.getElementById("status").textContent = "加载失败：" + e.message; });
+</script>
