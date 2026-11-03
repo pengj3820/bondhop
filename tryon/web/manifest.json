@@ -1,0 +1,218 @@
+{
+ "canvas": [
+  1024,
+  1536
+ ],
+ "base": "layers/base.webp",
+ "slots": {
+  "wings": {
+   "z": -10,
+   "label": "背饰/翅膀"
+  },
+  "legwear": {
+   "z": 10,
+   "label": "袜子"
+  },
+  "shoes": {
+   "z": 20,
+   "label": "鞋"
+  },
+  "bottom": {
+   "z": 30,
+   "label": "下装"
+  },
+  "dress": {
+   "z": 35,
+   "label": "连衣裙"
+  },
+  "top": {
+   "z": 40,
+   "label": "上衣"
+  },
+  "overskirt": {
+   "z": 50,
+   "label": "外层纱裙"
+  },
+  "arms": {
+   "z": 55,
+   "label": "袖套"
+  },
+  "gloves": {
+   "z": 60,
+   "label": "手套"
+  },
+  "coat": {
+   "z": 70,
+   "label": "外套"
+  },
+  "neck": {
+   "z": 75,
+   "label": "颈饰"
+  },
+  "head": {
+   "z": 80,
+   "label": "头饰"
+  }
+ },
+ "items": [
+  {
+   "id": "top_white_puff",
+   "slot": "top",
+   "name": "白色泡泡袖短衬衫",
+   "layer": "layers/top_white_puff.webp",
+   "thumb": "thumbs/top_white_puff.webp",
+   "sheer": false
+  },
+  {
+   "id": "top_black_tee",
+   "slot": "top",
+   "name": "黑色修身短袖T恤",
+   "layer": "layers/top_black_tee.webp",
+   "thumb": "thumbs/top_black_tee.webp",
+   "sheer": false
+  },
+  {
+   "id": "top_stripe_knit",
+   "slot": "top",
+   "name": "海军蓝条纹长袖针织衫",
+   "layer": "layers/top_stripe_knit.webp",
+   "thumb": "thumbs/top_stripe_knit.webp",
+   "sheer": false
+  },
+  {
+   "id": "bottom_beige_skirt",
+   "slot": "bottom",
+   "name": "米色高腰A字裙",
+   "layer": "layers/bottom_beige_skirt.webp",
+   "thumb": "thumbs/bottom_beige_skirt.webp",
+   "sheer": false,
+   "tuckClip": "clips/bottom_beige_skirt_tuck.png"
+  },
+  {
+   "id": "bottom_blue_jeans",
+   "slot": "bottom",
+   "name": "浅蓝直筒牛仔裤",
+   "layer": "layers/bottom_blue_jeans.webp",
+   "thumb": "thumbs/bottom_blue_jeans.webp",
+   "sheer": false,
+   "tuckClip": "clips/bottom_blue_jeans_tuck.png"
+  },
+  {
+   "id": "dress_red_floral",
+   "slot": "dress",
+   "name": "红色碎花吊带连衣裙",
+   "layer": "layers/dress_red_floral.webp",
+   "thumb": "thumbs/dress_red_floral.webp",
+   "sheer": false
+  },
+  {
+   "id": "coat_camel_long",
+   "slot": "coat",
+   "name": "驼色长款大衣（敞开）",
+   "layer": "layers/coat_camel_long.webp",
+   "thumb": "thumbs/coat_camel_long.webp",
+   "sheer": false,
+   "innerClip": "clips/coat_camel_long_inner.png"
+  },
+  {
+   "id": "top_corset_gothic",
+   "slot": "top",
+   "name": "哥特蕾丝胸衣",
+   "layer": "layers/top_corset_gothic.webp",
+   "thumb": "thumbs/top_corset_gothic.webp",
+   "sheer": false
+  },
+  {
+   "id": "arms_lace_sleeves",
+   "slot": "arms",
+   "name": "黑色蕾丝泡泡袖套",
+   "layer": "layers/arms_lace_sleeves.webp",
+   "thumb": "thumbs/arms_lace_sleeves.webp",
+   "sheer": true
+  },
+  {
+   "id": "overskirt_tulle_highlow",
+   "slot": "overskirt",
+   "name": "黑红纱质前短后长裙",
+   "layer": "layers/overskirt_tulle_highlow.webp",
+   "thumb": "thumbs/overskirt_tulle_highlow.webp",
+   "sheer": true
+  },
+  {
+   "id": "legwear_sheer_black",
+   "slot": "legwear",
+   "name": "黑色透肉长筒袜",
+   "layer": "layers/legwear_sheer_black.webp",
+   "thumb": "thumbs/legwear_sheer_black.webp",
+   "sheer": true
+  },
+  {
+   "id": "shoes_platform_boots",
+   "slot": "shoes",
+   "name": "黑色厚底系带短靴",
+   "layer": "layers/shoes_platform_boots.webp",
+   "thumb": "thumbs/shoes_platform_boots.webp",
+   "sheer": false
+  },
+  {
+   "id": "wings_black_feather",
+   "slot": "wings",
+   "name": "黑色羽毛翅膀",
+   "layer": "layers/wings_black_feather.webp",
+   "thumb": "thumbs/wings_black_feather.webp",
+   "sheer": false
+  },
+  {
+   "id": "head_cat_ears",
+   "slot": "head",
+   "name": "黑色毛绒猫耳发箍",
+   "layer": "layers/head_cat_ears.webp",
+   "thumb": "thumbs/head_cat_ears.webp",
+   "sheer": false
+  },
+  {
+   "id": "gloves_cat_paw",
+   "slot": "gloves",
+   "name": "黑色毛绒猫爪手套",
+   "layer": "layers/gloves_cat_paw.webp",
+   "thumb": "thumbs/gloves_cat_paw.webp",
+   "sheer": false
+  },
+  {
+   "id": "dress_fairy_vines",
+   "slot": "dress",
+   "name": "森系藤蔓纱裙",
+   "layer": "layers/dress_fairy_vines.webp",
+   "thumb": "thumbs/dress_fairy_vines.webp",
+   "sheer": true
+  },
+  {
+   "id": "neck_lace_choker",
+   "slot": "neck",
+   "name": "黑色蕾丝项圈",
+   "layer": "layers/neck_lace_choker.webp",
+   "thumb": "thumbs/neck_lace_choker.webp",
+   "sheer": false
+  }
+ ],
+ "rules": {
+  "tuckSlot": "top",
+  "tuckZ": 29,
+  "innerUnderCoat": [
+   "top",
+   "dress",
+   "arms",
+   "neck"
+  ],
+  "exclusive": [
+   [
+    "dress",
+    "top"
+   ],
+   [
+    "dress",
+    "bottom"
+   ]
+  ]
+ }
+}
