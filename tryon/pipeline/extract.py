@@ -148,6 +148,8 @@ def extract(gid):
     alpha = np.where(keyed_soft, np.minimum(a_key, a_bg), a_bg)
 
     rgb = img.copy()
+    rim = cv2.dilate(keyed.astype(np.uint8), np.ones((11, 11), np.uint8)).astype(bool) & ~keyed
+    alpha = np.where(rim & (r > 0.12) & (s > 0.015), 0.0, alpha)
     if sheer:
         # colour under the fabric = the chroma input we sent (already pixel-aligned, carries the body's own
         # shading), times a smooth gain field for the model's re-lighting. Using the input instead of the
@@ -169,8 +171,11 @@ def extract(gid):
         # around the body outline the generated body may sit 1-3px off ours: take the most transparent
         # explanation (under = key colour or under = backdrop) and treat key-tinted pixels as body
         outline = cv2.morphologyEx(keyed.astype(np.uint8), cv2.MORPH_GRADIENT, np.ones((9, 9), np.uint8)).astype(bool)
-        am = np.where(outline, np.minimum(am, solve_alpha(img, bgf, key=key)), am)
-        am *= np.where(outline & (r > 0.25) & (s > 0.02), 0.0, 1.0)
+        # the body outline is unreliable (generated body sits 1-3px off ours): continue the fabric across it
+        # from the nearest reliable pixel instead of leaving a see-through seam along every limb
+        from scipy.ndimage import distance_transform_edt
+        _, (oy, ox) = distance_transform_edt(outline, return_indices=True)
+        am = np.where(outline, am[oy, ox], am)
         am = np.clip((am - 0.06) / 0.94, 0, 1)
         # where the generated image shows plain backdrop (e.g. the model drew the body slightly slimmer
         # than our input) there is no fabric, whatever the input had underneath
@@ -188,6 +193,7 @@ def extract(gid):
         alpha = np.where(keyed_soft, am, np.maximum(am, alpha * (am > 0.02))) * soft(support, 2.0)
         alpha *= np.where(~keyed_soft & (s > 0.05), np.clip((0.3 - r) / 0.15, 0, 1), 1.0)
         F = np.clip(B + (img - B) / np.maximum(alpha, 0.05)[..., None], 0, 1)
+        F = np.where(outline[..., None], F[oy, ox], F)
         # dark sheer fabric (black tulle / lace) un-mixes with a residual colour cast: neutralise it
         lumF = (F @ np.array([0.299, 0.587, 0.114], np.float32))[..., None]
         chromaF = (F.max(-1) - F.min(-1))[..., None]
@@ -254,6 +260,18 @@ def extract(gid):
     alpha = np.where(solid, 1.0, np.where(empty, 0.0, refined))
     alpha = alpha * soft(region & ~prot)
     alpha[alpha < 0.01] = 0
+
+    # ---- back items (wings): drawn behind the body, so they may run under the body edge freely.
+    # Extend them across the rim next to the body so no backdrop/rim-light gap shows between body and wings.
+    if SLOTS[slot]["z"] < 0:
+        from scipy.ndimage import distance_transform_edt
+        m_base = np.asarray(Image.open(ASSETS / "person_mask.png")).astype(np.float32) / 255
+        under = cv2.dilate((m_base > 0.02).astype(np.uint8), np.ones((15, 15), np.uint8)).astype(bool) & ~prot
+        solid_w = alpha > 0.9
+        dist, (iy, ix) = distance_transform_edt(~solid_w, return_indices=True)
+        fillw = under & (dist <= 14) & (alpha < 0.9)
+        rgb = np.where(fillw[..., None], rgb[iy, ix], rgb)
+        alpha = np.where(fillw, 1.0, alpha)
 
     # ---- hard contract: inside the garment's outline the base body is NEVER visible ----
     # (base visibility = m * (1 - a); it is zero only if a == 1 wherever the body matte m > 0).
@@ -324,7 +342,7 @@ if __name__ == "__main__":
     ids = sys.argv[1:] or list(CAT)
     if len(ids) == 1:
         extract(ids[0])
-    else:  # one process per part keeps peak memory low (ONNX matting on CPU); 2 in parallel
+    else:  # one process per part keeps peak memory low (ONNX matting on CPU); sequential (parallel runs ran out of memory and lost parts)
         from concurrent.futures import ThreadPoolExecutor
-        with ThreadPoolExecutor(2) as ex:
+        with ThreadPoolExecutor(1) as ex:
             list(ex.map(lambda g: subprocess.run([sys.executable, __file__, g], check=False), ids))

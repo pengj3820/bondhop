@@ -3,6 +3,13 @@
  "key": "green",
  "sliver_px_filled": 496,
  "garment_px": 165171,
+ "cover_contract": {
+  "filled_px": 802,
+  "grown_px": 918,
+  "iterations": 1
+ },
+ "base_visible_max": 0.0,
+ "base_visible_px": 0,
  "must_cover_ratio": 0.9999,
  "cut_at_band_px": 0,
  "pass": true
