@@ -197,7 +197,9 @@ def extract(gid):
         # dark sheer fabric (black tulle / lace) un-mixes with a residual colour cast: neutralise it
         lumF = (F @ np.array([0.299, 0.587, 0.114], np.float32))[..., None]
         chromaF = (F.max(-1) - F.min(-1))[..., None]
-        F = np.where((lumF < 0.25) & (chromaF < 0.18), F * 0.2 + lumF * 0.8, F)
+        # black lace over a green key comes back olive: pull dark, low-chroma fabric to neutral
+        neutral = np.clip((0.58 - lumF) / 0.2, 0, 1) * np.clip((0.26 - chromaF) / 0.08, 0, 1)
+        F = F * (1 - 0.85 * neutral) + lumF * 0.85 * neutral
         rgb = np.clip(np.where(alpha[..., None] > 0.02, F, img), 0, 1)
         # no backdrop gap between a garment and the body outline: continue the garment up to the body
         # edge on the outside of the body (inside, the body is drawn by the base layer anyway)
@@ -297,6 +299,8 @@ def extract(gid):
 
     edge = (cv2.dilate((alpha < 0.98).astype(np.uint8), np.ones((7, 7), np.uint8)).astype(bool)
             | cv2.dilate((s > 0.03).astype(np.uint8) * (r > 0.2), np.ones((13, 13), np.uint8)).astype(bool)) & (alpha > 0)
+    if sheer:  # see-through fabric: the key colour can tint every pixel, not only edges
+        edge = alpha > 0
     rgb = np.where(edge[..., None], despill(rgb, key), rgb)
 
     # ---- QA ----

@@ -45,14 +45,8 @@ def main():
     grain = cv2.GaussianBlur(rng.normal(0, 2.0, rgb.shape[:2]).astype(np.float32), (0, 0), 0.7)[..., None]
     filled = filled + grain
     w = cv2.GaussianBlur(hole.astype(np.float32), (0, 0), 2.0)[..., None]
-    w[CUT_Y - 2:CUT_Y] = np.maximum(w[CUT_Y - 2:CUT_Y], hole[CUT_Y - 4:CUT_Y - 2, :, None])
     res = filled * w + rgb.astype(np.float32) * (1 - w)
-    # tube-top edge: thin fabric edge + soft contact shadow
-    xs = np.where(hole[CUT_Y - 3])[0]
-    cols = slice(xs.min() + 2, xs.max() - 1)
-    for dy, f in ((0, 0.9), (1, 0.95), (-1, 0.96), (-2, 0.98)):
-        y = CUT_Y + dy
-        res[y, cols] *= np.where(person[y, cols][:, None], f, 1.0)
+    # no drawn edge: low necklines (sweetheart corsets) dip below the cut and would reveal it
     res = np.clip(res, 0, 255) / 255
     Image.fromarray((res * 255).astype(np.uint8)).save(ASSETS / "model_display.png")
     m = np.asarray(Image.open(ASSETS / "person_mask.png")).astype(np.float32) / 255
