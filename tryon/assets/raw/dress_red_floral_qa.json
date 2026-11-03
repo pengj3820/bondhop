@@ -2,10 +2,10 @@
  "sheer": false,
  "key": "green",
  "sliver_px_filled": 1134,
- "garment_px": 213483,
+ "garment_px": 213481,
  "cover_contract": {
-  "filled_px": 1265,
-  "grown_px": 1117,
+  "filled_px": 1263,
+  "grown_px": 1116,
   "iterations": 1
  },
  "base_visible_max": 0.0,
