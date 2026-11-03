@@ -80,6 +80,52 @@ def smoothstep(e0, e1, x):
     return t * t * (3 - 2 * t)
 
 
+def envelope(alpha):
+    """Where the garment claims to be: its solid area with small notches / slits / pin-holes closed.
+    Real openings (necklines, open coat fronts, arms below short sleeves) stay open."""
+    g = (alpha > 0.5).astype(np.uint8)
+    closed = cv2.morphologyEx(g, cv2.MORPH_CLOSE, np.ones((25, 25), np.uint8))
+    n, lab, st, _ = cv2.connectedComponentsWithStats(1 - closed)
+    holes = np.zeros(n, bool)
+    holes[1:] = st[1:, cv2.CC_STAT_AREA] < 4000
+    return closed.astype(bool) | holes[lab]
+
+
+def contract_zone(alpha, prot, m):
+    """Pixels where the base must be invisible: the body's own silhouette edge where the garment lies on it,
+    plus the interior of the garment outline (holes). Garment edges lying on the body interior (necklines,
+    hems) are real fabric edges and keep their anti-aliasing against the body underneath."""
+    env = envelope(alpha) & ~prot
+    sil_band = cv2.dilate(((m > 0.003) & (m < 0.98)).astype(np.uint8), np.ones((7, 7), np.uint8)).astype(bool)
+    interior = cv2.erode(env.astype(np.uint8), np.ones((5, 5), np.uint8)).astype(bool)
+    return env & (m > 0.003) & (sil_band | interior)
+
+
+def base_visible(alpha, prot, m):
+    return m * (1 - alpha) * contract_zone(alpha, prot, m)
+
+
+def enforce_cover(rgb, alpha, img, prot, s, r, m, grow_px=3):
+    from scipy.ndimage import distance_transform_edt
+    solid_g = (alpha > 0.95) & ~((s > 0.03) & (r > 0.2))
+    _, (iy, ix) = distance_transform_edt(~solid_g, return_indices=True)
+    nearest = cv2.GaussianBlur(rgb[iy, ix], (0, 0), 1.0)
+    cover = contract_zone(alpha, prot, m)
+    fix = cover & (alpha < 0.999)
+    rgb = np.where((fix & (alpha < 0.9))[..., None], nearest, rgb)
+    alpha = np.where(cover, 1.0, alpha)
+    # let the garment run on over the backdrop beyond the body silhouette with a smooth (blurred) fade,
+    # so anti-aliasing happens against the backdrop, never against the body
+    near = cv2.dilate((cover & (m < 0.98)).astype(np.uint8), np.ones((2 * grow_px + 3,) * 2, np.uint8)).astype(bool)
+    zone = near & (m <= 0.003) & ~prot
+    solid = (alpha > 0.5).astype(np.float32)
+    fade = np.clip(cv2.GaussianBlur(solid, (0, 0), 0.8) * 1.1, 0, 1)
+    grow = zone & (fade > alpha + 0.02)
+    rgb = np.where(grow[..., None], nearest, rgb)
+    alpha = np.where(grow, fade, alpha)
+    return rgb, alpha, {"filled_px": int(fix.sum()), "grown_px": int(grow.sum())}
+
+
 def extract(gid):
     item = CAT[gid]
     slot, key, sheer = item["slot"], item.get("key", "green"), item.get("sheer", False)
@@ -209,12 +255,40 @@ def extract(gid):
     alpha = alpha * soft(region & ~prot)
     alpha[alpha < 0.01] = 0
 
+    # ---- hard contract: inside the garment's outline the base body is NEVER visible ----
+    # (base visibility = m * (1 - a); it is zero only if a == 1 wherever the body matte m > 0).
+    # Soft anti-aliased garment edges are moved onto the backdrop just outside the body silhouette.
+    contract = {"filled_px": 0, "grown_px": 0}
+    if not sheer and slot != "wings":
+        m_base = np.asarray(Image.open(ASSETS / "person_mask.png")).astype(np.float32) / 255
+        for it in range(4):  # growing the garment can enclose new body-edge pixels: iterate to a fixed point
+            rgb, alpha, c = enforce_cover(rgb, alpha, img, prot, s, r, m_base)
+            contract = {k: contract.get(k, 0) + c[k] for k in c}
+            contract["iterations"] = it + 1
+            if not (base_visible(alpha, prot, m_base) > 0.01).any():
+                break
+        for _ in range(3):  # final sweep: make any remaining visible base pixel opaque garment
+            left = base_visible(alpha, prot, m_base) > 0.01
+            if not left.any():
+                break
+            from scipy.ndimage import distance_transform_edt
+            _, (iy, ix) = distance_transform_edt(~(alpha > 0.95), return_indices=True)
+            rgb = np.where(left[..., None], rgb[iy, ix], rgb)
+            alpha = np.where(left, 1.0, alpha)
+            contract["final_sweep_px"] = contract.get("final_sweep_px", 0) + int(left.sum())
+
     edge = (cv2.dilate((alpha < 0.98).astype(np.uint8), np.ones((7, 7), np.uint8)).astype(bool)
             | cv2.dilate((s > 0.03).astype(np.uint8) * (r > 0.2), np.ones((13, 13), np.uint8)).astype(bool)) & (alpha > 0)
     rgb = np.where(edge[..., None], despill(rgb, key), rgb)
 
     # ---- QA ----
-    qa = {"sheer": sheer, "key": key, "sliver_px_filled": int(slivers.sum()), "garment_px": int((alpha > 0.5).sum())}
+    qa = {"sheer": sheer, "key": key, "sliver_px_filled": int(slivers.sum()), "garment_px": int((alpha > 0.5).sum()),
+          "cover_contract": contract}
+    if not sheer and slot != "wings":  # verify the contract on the saved layer: base visibility inside outline
+        m = np.asarray(Image.open(ASSETS / "person_mask.png")).astype(np.float32) / 255
+        vis = base_visible(alpha, prot, m)
+        qa["base_visible_max"] = round(float(vis.max()), 4)
+        qa["base_visible_px"] = int((vis > 0.01).sum())
     ok = qa["garment_px"] > 1500
     mc = must_cover(slot)
     if mc and not sheer:
@@ -232,6 +306,7 @@ def extract(gid):
             cut += int((alpha[yb] > 0.5).sum())
     qa["cut_at_band_px"] = cut
     ok &= cut < 25
+    ok &= qa.get("base_visible_px", 0) == 0
     qa["pass"] = bool(ok)
 
     (ASSETS / "layers").mkdir(exist_ok=True)
@@ -249,7 +324,7 @@ if __name__ == "__main__":
     ids = sys.argv[1:] or list(CAT)
     if len(ids) == 1:
         extract(ids[0])
-    else:  # one process per part keeps peak memory low (ONNX matting on CPU); 3 in parallel
+    else:  # one process per part keeps peak memory low (ONNX matting on CPU); 2 in parallel
         from concurrent.futures import ThreadPoolExecutor
-        with ThreadPoolExecutor(3) as ex:
+        with ThreadPoolExecutor(2) as ex:
             list(ex.map(lambda g: subprocess.run([sys.executable, __file__, g], check=False), ids))
