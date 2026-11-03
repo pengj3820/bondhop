@@ -36,7 +36,7 @@ def save_rgba(rgb: np.ndarray, alpha: np.ndarray, p):
     Image.fromarray((np.clip(np.concatenate([rgb, a], -1), 0, 1) * 255).round().astype(np.uint8), "RGBA").save(p)
 
 
-def _collect(stream) -> Image.Image:
+def _collect(stream, mode="RGB") -> Image.Image:
     final = None
     for ev in stream:
         t = getattr(ev, "type", "")
@@ -46,7 +46,7 @@ def _collect(stream) -> Image.Image:
             final = final or None
     if final is None:
         raise RuntimeError("no completed image in stream")
-    return b64_to_img(final)
+    return Image.open(io.BytesIO(base64.b64decode(final))).convert(mode)
 
 
 def generate(prompt: str, quality="high", tries=3) -> Image.Image:
@@ -62,7 +62,7 @@ def generate(prompt: str, quality="high", tries=3) -> Image.Image:
     raise last
 
 
-def edit(images, prompt: str, mask=None, quality="high", tries=3, model=None, fidelity=None) -> Image.Image:
+def edit(images, prompt: str, mask=None, quality="high", tries=3, model=None, fidelity=None, background=None):
     last = None
     for _ in range(tries):
         try:
@@ -71,9 +71,12 @@ def edit(images, prompt: str, mask=None, quality="high", tries=3, model=None, fi
                       size=f"{W}x{H}", quality=quality, stream=True, partial_images=2)
             if fidelity:
                 kw["input_fidelity"] = fidelity
+            if background:
+                kw["background"] = background
+                kw["output_format"] = "png"
             if mask is not None:
                 kw["mask"] = open(mask, "rb")
-            return _collect(client().images.edit(**kw))
+            return _collect(client().images.edit(**kw), "RGBA" if background == "transparent" else "RGB")
         except Exception as e:  # noqa: BLE001
             last = e
             print("retry after", repr(e)[:160], flush=True)
