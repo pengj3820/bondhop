@@ -1,0 +1,16 @@
+[
+  {"id": "top_white_puff", "category": "top", "name": "白色泡泡袖短衬衫",
+   "desc": "a white cotton blouse with short puff sleeves, a small rounded collar and front buttons, hem ending just below the waist"},
+  {"id": "top_black_tee", "category": "top", "name": "黑色修身短袖T恤",
+   "desc": "a plain black fitted crew-neck short-sleeve cotton t-shirt, hem ending at the hip"},
+  {"id": "top_stripe_knit", "category": "top", "name": "海军蓝条纹长袖针织衫",
+   "desc": "a navy and white horizontal striped long-sleeve knit sweater with a boat neckline, sleeves ending at the wrists, hem at the hip"},
+  {"id": "bottom_beige_skirt", "category": "bottom", "name": "米色高腰A字裙",
+   "desc": "a beige high-waisted A-line midi skirt in light wool, ending just below the knees"},
+  {"id": "bottom_blue_jeans", "category": "bottom", "name": "浅蓝直筒牛仔裤",
+   "desc": "light-blue high-waisted straight-leg denim jeans with a belt loop waistband, full length ending at the ankles"},
+  {"id": "dress_red_floral", "category": "dress", "name": "红色碎花吊带连衣裙",
+   "desc": "a red floral print slip dress with thin spaghetti straps and a square neckline, flowing skirt ending at mid-calf"},
+  {"id": "coat_camel_long", "category": "coat", "name": "驼色长款大衣（敞开）",
+   "desc": "a camel wool long coat with notched lapels and long sleeves, worn completely OPEN and unbuttoned so the front of the body is visible between the two coat panels, hem below the knees"}
+]

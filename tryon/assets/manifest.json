@@ -1,0 +1,135 @@
+{
+ "canvas": [
+  1024,
+  1536
+ ],
+ "base": "layers/base.png",
+ "landmarks": {
+  "canvas": [
+   1024,
+   1536
+  ],
+  "chin_y": 300,
+  "neck_y": 318,
+  "shoulder_y": 365,
+  "bust_y": 470,
+  "waist_y": 600,
+  "hip_y": 700,
+  "crotch_y": 830,
+  "wrist_y": 775,
+  "knee_y": 1060,
+  "ankle_y": 1345,
+  "hand_x_inner": [
+   340,
+   690
+  ]
+ },
+ "items": [
+  {
+   "id": "top_white_puff",
+   "category": "top",
+   "name": "白色泡泡袖短衬衫",
+   "desc": "a white cotton blouse with short puff sleeves, a small rounded collar and front buttons, hem ending just below the waist",
+   "layer": "layers/top_white_puff.png",
+   "qa": {
+    "sliver_px_filled": 1692,
+    "garment_px": 105761,
+    "must_cover_ratio": 1.0,
+    "pass": true,
+    "body_visible_in_region_px": 54884
+   }
+  },
+  {
+   "id": "top_black_tee",
+   "category": "top",
+   "name": "黑色修身短袖T恤",
+   "desc": "a plain black fitted crew-neck short-sleeve cotton t-shirt, hem ending at the hip",
+   "layer": "layers/top_black_tee.png",
+   "qa": {
+    "sliver_px_filled": 1410,
+    "garment_px": 111627,
+    "must_cover_ratio": 1.0,
+    "pass": true,
+    "body_visible_in_region_px": 47949
+   }
+  },
+  {
+   "id": "top_stripe_knit",
+   "category": "top",
+   "name": "海军蓝条纹长袖针织衫",
+   "desc": "a navy and white horizontal striped long-sleeve knit sweater with a boat neckline, sleeves ending at the wrists, hem at the hip",
+   "layer": "layers/top_stripe_knit.png",
+   "qa": {
+    "sliver_px_filled": 2955,
+    "garment_px": 138909,
+    "must_cover_ratio": 1.0,
+    "pass": true,
+    "body_visible_in_region_px": 26539
+   }
+  },
+  {
+   "id": "bottom_beige_skirt",
+   "category": "bottom",
+   "name": "米色高腰A字裙",
+   "desc": "a beige high-waisted A-line midi skirt in light wool, ending just below the knees",
+   "layer": "layers/bottom_beige_skirt.png",
+   "qa": {
+    "sliver_px_filled": 785,
+    "garment_px": 180250,
+    "must_cover_ratio": 1.0,
+    "pass": true,
+    "body_visible_in_region_px": 49108
+   },
+   "tuckClip": "clips/bottom_beige_skirt_tuck.png"
+  },
+  {
+   "id": "bottom_blue_jeans",
+   "category": "bottom",
+   "name": "浅蓝直筒牛仔裤",
+   "desc": "light-blue high-waisted straight-leg denim jeans with a belt loop waistband, full length ending at the ankles",
+   "layer": "layers/bottom_blue_jeans.png",
+   "qa": {
+    "sliver_px_filled": 1816,
+    "garment_px": 151513,
+    "must_cover_ratio": 1.0,
+    "pass": true,
+    "body_visible_in_region_px": 36312
+   },
+   "tuckClip": "clips/bottom_blue_jeans_tuck.png"
+  },
+  {
+   "id": "dress_red_floral",
+   "category": "dress",
+   "name": "红色碎花吊带连衣裙",
+   "desc": "a red floral print slip dress with thin spaghetti straps and a square neckline, flowing skirt ending at mid-calf",
+   "layer": "layers/dress_red_floral.png",
+   "qa": {
+    "sliver_px_filled": 833,
+    "garment_px": 207197,
+    "must_cover_ratio": 1.0,
+    "pass": true,
+    "body_visible_in_region_px": 79114
+   }
+  },
+  {
+   "id": "coat_camel_long",
+   "category": "coat",
+   "name": "驼色长款大衣（敞开）",
+   "desc": "a camel wool long coat with notched lapels and long sleeves, worn completely OPEN and unbuttoned so the front of the body is visible between the two coat panels, hem below the knees",
+   "layer": "layers/coat_camel_long.png",
+   "qa": {
+    "sliver_px_filled": 3545,
+    "garment_px": 219218,
+    "pass": true,
+    "body_visible_in_region_px": 93161
+   },
+   "innerClip": "clips/coat_camel_long_inner.png"
+  }
+ ],
+ "order": [
+  "dress",
+  "bottom",
+  "top",
+  "coat"
+ ]
+}
